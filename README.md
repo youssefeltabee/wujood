@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wujood (وجود)
 
-## Getting Started
+From Digital Ghost to Digital Presence. All-in-one digital presence platform for Egyptian SMEs.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 16 + TypeScript
+- **Styling**: Tailwind CSS 4
+- **Database ORM**: Prisma 6 + PostgreSQL
+- **Auth**: JWT + bcrypt
+- **Hosting**: Vercel (recommended)
+
+## Setup
+
+### 1. Database
+
+Create a free PostgreSQL database at [neon.tech](https://neon.tech) (no credit card needed). Copy the connection string.
+
+### 2. Environment
+
+Create `.env` in the project root:
+
+```
+DATABASE_URL="postgresql://user:password@ep-xxx.us-east-2.aws.neon.tech/wujood?sslmode=require"
+JWT_SECRET="generate-a-random-secret-string"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Push schema & seed
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npx prisma db push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Run
 
-## Learn More
+```bash
+npm run dev     # http://localhost:3000
+npm run build   # production build
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Push to GitHub, connect repo to Vercel, add `DATABASE_URL` and `JWT_SECRET` as environment variables in Vercel dashboard.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── page.tsx              # Landing page
+│   ├── login/                # Login
+│   ├── register/             # Register
+│   ├── dashboard/            # Dashboard (protected)
+│   ├── audit/[id]/           # Audit report (protected)
+│   └── api/                  # API routes
+├── components/audit/         # Audit UI components
+├── config/site.ts            # Tiers, pricing, labels
+├── lib/
+│   ├── db.ts                 # Prisma client
+│   ├── auth.ts               # JWT + bcrypt
+│   └── audit/
+│       ├── scanner.ts        # URL scanner (10 categories)
+│       ├── scorer.ts         # Scoring algorithm
+│       └── report.tsx        # PDF generator
+└── middleware.ts             # Auth middleware
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private — Wujood Inc.
