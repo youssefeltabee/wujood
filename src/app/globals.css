@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+:root {
+  --wujood-blue: #1e3a5f;
+  --wujood-gold: #c9a84c;
+  --wujood-light: #f8f6f2;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
