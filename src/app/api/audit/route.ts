@@ -50,5 +50,6 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
     take: 20,
   });
-  return NextResponse.json({ audits });
+  const serialized = audits.map((a) => ({ ...a, id: Number(a.id) }));
+  return NextResponse.json({ audits: serialized });
 }
