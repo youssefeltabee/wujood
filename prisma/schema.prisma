@@ -6,9 +6,20 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole { ADMIN USER }
-enum SubscriptionTier { KASHIF SANE RAED }
-enum AuditStatus { PENDING COMPLETED FAILED }
+enum UserRole {
+  ADMIN
+  USER
+}
+enum SubscriptionTier {
+  KASHIF
+  SANE
+  RAED
+}
+enum AuditStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
 
 model User {
   id String @id @default(cuid())
