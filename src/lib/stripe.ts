@@ -1,9 +1,13 @@
 import Stripe from "stripe"
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-09-30" as Stripe.LatestApiVersion,
-  typescript: true,
-})
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return null
+  return new Stripe(key, {
+    apiVersion: "2025-09-30" as Stripe.LatestApiVersion,
+    typescript: true,
+  })
+}
 
 export const PLANS = {
   kashif: { priceId: process.env.STRIPE_KASHIF_PRICE_ID || "", name: "كاشف", nameEn: "Kashif", amount: 1250, features: ["موقع إلكتروني متكامل", "تدقيق الشبح الرقمي", "ردود تلقائية واتساب", "مجال فرعي مجاني"] },
@@ -14,6 +18,8 @@ export const PLANS = {
 export type PlanKey = keyof typeof PLANS
 
 export async function createCheckoutSession(userId: string, planKey: PlanKey, successUrl: string, cancelUrl: string) {
+  const stripe = getStripe()
+  if (!stripe) throw new Error("Stripe not configured")
   const plan = PLANS[planKey]
   const session = await stripe.checkout.sessions.create({
     mode: "subscription", payment_method_types: ["card"],
@@ -27,5 +33,7 @@ export async function createCheckoutSession(userId: string, planKey: PlanKey, su
 }
 
 export async function createCustomerPortalSession(customerId: string, returnUrl: string) {
+  const stripe = getStripe()
+  if (!stripe) throw new Error("Stripe not configured")
   return stripe.billingPortal.sessions.create({ customer: customerId, return_url: returnUrl })
 }
