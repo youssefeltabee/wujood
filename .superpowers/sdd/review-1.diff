@@ -1,0 +1,131 @@
+23e21dd feat(theme): dark luxe theme foundation ÔÇö new CSS tokens, dark base, gold/cyan accents
+
+ src/app/globals.css | 26 +++++++++++++++-----------
+ src/app/layout.tsx  |  2 +-
+ 2 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 6a7ef27..7d556b3 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1,26 +1,30 @@
+ @import "tailwindcss";
+ 
+ @theme {
+   --font-heading: var(--font-cairo), system-ui, sans-serif;
+   --font-body: var(--font-dm-sans), var(--font-cairo), system-ui, sans-serif;
+-  --color-w-teal: #0D7377;
+-  --color-w-teal-dark: #095B5E;
+-  --color-w-terracotta: #C85A48;
+-  --color-w-terracotta-dark: #A84738;
+-  --color-w-cream: #FDF8F0;
+-  --color-w-cream-dark: #F5EDDC;
+-  --color-w-charcoal: #1a1a2e;
++  --color-bg-primary: #0A0A0A;
++  --color-bg-surface: #1A1A1A;
++  --color-bg-elevated: #242424;
++  --color-text-primary: #FFFFFF;
++  --color-text-secondary: #8B8B8B;
++  --color-text-muted: #555555;
++  --color-accent-gold: #D4A853;
++  --color-accent-cyan: #00C9B7;
+   --color-w-gold: #D4A853;
+-  --color-w-sand: #E8DCC8;
++  --color-border-subtle: #2A2A2A;
+ }
+ 
++html { background-color: #0A0A0A; color: #FFFFFF; }
++body { background-color: #0A0A0A; }
++
+ html.lenis, html.lenis body {
+   height: auto;
+ }
+ 
+ .lenis.lenis-smooth {
+   scroll-behavior: auto;
+ }
+ 
+ .lenis.lenis-smooth [data-lenis-prevent] {
+   overscroll-behavior: contain;
+@@ -95,21 +99,21 @@ h1, h2, h3, h4, h5, h6 {
+   gap: 3rem;
+   width: max-content;
+   animation: marquee 30s linear infinite;
+ }
+ 
+ .pain-point-card {
+   transition: transform 0.2s, box-shadow 0.2s;
+ }
+ .pain-point-card:hover {
+   transform: translateY(-2px);
+-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
++  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+ }
+ .pain-point-card:hover .pain-point-icon {
+   transform: scale(1.15);
+ }
+ .pain-point-icon {
+   display: inline-block;
+   transition: transform 0.2s;
+ }
+ 
+ .step-number {
+@@ -128,33 +132,33 @@ h1, h2, h3, h4, h5, h6 {
+   transition: transform 0.15s ease-out;
+   transform-style: preserve-3d;
+ }
+ .card-tilt-inner::after {
+   content: "";
+   position: absolute;
+   inset: 0;
+   border-radius: inherit;
+   opacity: 0;
+   transition: opacity 0.3s;
+-  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(13, 115, 119, 0.08), transparent 60%);
++  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(212, 168, 83, 0.08), transparent 60%);
+   pointer-events: none;
+ }
+ .card-tilt-inner:hover::after {
+   opacity: 1;
+ }
+ 
+ .mouse-blob {
+   position: fixed;
+   width: 600px;
+   height: 600px;
+   border-radius: 50%;
+-  background: radial-gradient(circle, rgba(13, 115, 119, 0.08) 0%, transparent 70%);
++  background: radial-gradient(circle, rgba(212, 168, 83, 0.08) 0%, transparent 70%);
+   pointer-events: none;
+   transform: translate(-50%, -50%);
+   transition: opacity 0.3s;
+   z-index: 0;
+ }
+ 
+ @supports (animation-timeline: scroll()) {
+   .scroll-reveal {
+     animation: rise-up 0.6s ease-out both;
+     animation-timeline: view();
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index a20a237..613ade4 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -18,17 +18,17 @@ const dmSans = DM_Sans({
+ export const metadata: Metadata = {
+   title: {
+     template: "%s | Wujood",
+     default: "Wujood | Your Business, Online. In EGP. In Arabic.",
+   },
+   description: "Website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs. All in EGP, all in Arabic.",
+ };
+ 
+ export default function RootLayout({ children }: { children: React.ReactNode }) {
+   return (
+-    <html lang="ar" dir="auto" className="h-full">
++    <html lang="ar" dir="auto" className="dark h-full">
+       <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
+         <SmoothScroll>{children}</SmoothScroll>
+       </body>
+     </html>
+   );
+ }
