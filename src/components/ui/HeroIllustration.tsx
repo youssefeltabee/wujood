@@ -1,3 +1,6 @@
+const barFillClass = (pct: number) =>
+  pct < 30 ? "bg-score-low" : pct < 60 ? "bg-score-midlow" : "bg-score-high";
+
 export function HeroIllustration() {
   return (
     <div className="relative">
@@ -30,8 +33,8 @@ export function HeroIllustration() {
               </div>
               <div className="h-1.5 bg-border-subtle rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full"
-                  style={{ width: `${bar.pct}%`, backgroundColor: bar.pct < 30 ? "#ef4444" : bar.pct < 60 ? "#f97316" : "#22c55e" }}
+                  className={`h-full rounded-full ${barFillClass(bar.pct)}`}
+                  style={{ width: `${bar.pct}%` }}
                 />
               </div>
             </div>

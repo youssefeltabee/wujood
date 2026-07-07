@@ -13,6 +13,10 @@
   --color-accent-cyan: #00C9B7;
   --color-w-gold: #D4A853;
   --color-border-subtle: #2A2A2A;
+  --color-score-low: #ef4444;
+  --color-score-midlow: #f97316;
+  --color-score-mid: #eab308;
+  --color-score-high: #22c55e;
 }
 
 html { background-color: #0A0A0A; color: #FFFFFF; }

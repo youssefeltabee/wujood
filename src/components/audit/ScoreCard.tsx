@@ -6,7 +6,7 @@ interface ScoreCardProps {
 }
 
 const levelColor = (s: number) =>
-  s <= 25 ? "bg-red-500" : s <= 50 ? "bg-orange-500" : s <= 75 ? "bg-yellow-500" : "bg-green-500";
+  s <= 25 ? "bg-score-low" : s <= 50 ? "bg-score-midlow" : s <= 75 ? "bg-score-mid" : "bg-score-high";
 
 export function ScoreCard({ score, label }: ScoreCardProps) {
   return (

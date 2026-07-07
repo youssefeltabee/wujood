@@ -7,7 +7,7 @@ interface CategoryBreakdownProps {
 }
 
 const barColor = (s: number) =>
-  s <= 3 ? "bg-red-500" : s <= 6 ? "bg-orange-500" : s <= 8 ? "bg-yellow-500" : "bg-green-500";
+  s <= 3 ? "bg-score-low" : s <= 6 ? "bg-score-midlow" : s <= 8 ? "bg-score-mid" : "bg-score-high";
 
 export function CategoryBreakdown({ categories, labels, descriptions }: CategoryBreakdownProps) {
   return (
