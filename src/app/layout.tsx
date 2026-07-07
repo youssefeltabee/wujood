@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="auto" className="h-full">
+    <html lang="ar" dir="auto" className="dark h-full">
       <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
         <SmoothScroll>{children}</SmoothScroll>
       </body>
