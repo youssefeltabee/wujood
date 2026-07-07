@@ -5,10 +5,11 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id            BigInt        @id @default(autoincrement())
+  id            String        @id @default(cuid())
   email         String        @unique
   name          String?
   passwordHash  String
@@ -16,10 +17,14 @@ model User {
   companySize   String?
   phone         String?
   role          String        @default("customer")
+  businessType  String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
   accounts      Account[]
   sessions      Session[]
+  refreshTokens RefreshToken[]
   subscriptions Subscription[]
   audits        Audit[]
   contacts      Contact[]
@@ -28,130 +33,184 @@ model User {
   reviews       Review[]
   socialAccounts SocialAccount[]
   websites      Website[]
+  partner       Partner?
+  blogPosts     BlogPost[]
+  commissions   PartnerCommission[]
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
 }
 
 model Account {
-  id                BigInt   @id @default(autoincrement())
-  userId            BigInt
+  id                String   @id @default(cuid())
+  userId            String
   provider          String
   providerAccountId String
   createdAt         DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id])
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt
+  id        String   @id @default(cuid())
+  userId    String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Subscription {
-  id            BigInt   @id @default(autoincrement())
-  userId        BigInt
-  tier          String   @default("kashif")
-  status        String   @default("active")
-  priceEgp      Int
-  startedAt     DateTime @default(now())
-  expiresAt     DateTime?
-  canceledAt    DateTime?
-  user          User     @relation(fields: [userId], references: [id])
+  id        String    @id @default(cuid())
+  userId    String
+  tier      String    @default("kashif")
+  status    String    @default("active")
+  interval  String    @default("monthly")
+  priceEgp  Int
+  startedAt DateTime  @default(now())
+  expiresAt DateTime?
+  canceledAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([tier])
 }
 
 model Website {
-  id           BigInt        @id @default(autoincrement())
-  userId       BigInt
-  templateId   BigInt?
+  id           String        @id @default(cuid())
+  userId       String
+  templateId   String?
   domain       String?
   customDomain String?
   title        String?
   description  String?
   logoUrl      String?
   colors       Json?
-  pages        WebsitePage[]
+  isPublished  Boolean       @default(false)
+  deletedAt    DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  user         User          @relation(fields: [userId], references: [id])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   template     Template?     @relation(fields: [templateId], references: [id])
+  pages        WebsitePage[]
+
+  @@index([userId])
+  @@index([domain])
+  @@index([isPublished])
 }
 
 model WebsitePage {
-  id        BigInt   @id @default(autoincrement())
-  websiteId BigInt
+  id        String   @id @default(cuid())
+  websiteId String
   slug      String
   title     String?
   content   Json?
   order     Int      @default(0)
-  website   Website  @relation(fields: [websiteId], references: [id])
+  website   Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId])
+  @@unique([websiteId, slug])
 }
 
 model Template {
-  id          BigInt    @id @default(autoincrement())
-  name        String
-  category    String    @default("service")
-  thumbnail   String?
-  isActive    Boolean   @default(true)
-  websites    Website[]
-  createdAt   DateTime  @default(now())
+  id        String    @id @default(cuid())
+  name      String
+  category  String    @default("service")
+  thumbnail String?
+  isActive  Boolean   @default(true)
+  websites  Website[]
+  createdAt DateTime  @default(now())
+
+  @@index([category])
+  @@index([isActive])
 }
 
 model Audit {
-  id          BigInt   @id @default(autoincrement())
-  userId      BigInt?
-  url         String
-  totalScore  Int
-  mobileScore Int      @default(0)
-  speedScore  Int      @default(0)
-  seoScore    Int      @default(0)
-  contentScore Int     @default(0)
-  socialScore Int      @default(0)
-  pricingScore Int     @default(0)
-  paymentScore Int     @default(0)
-  aiScore     Int      @default(0)
-  trustScore  Int      @default(0)
-  contactScore Int     @default(0)
-  rawData     Json?
-  pdfUrl      String?
-  createdAt   DateTime  @default(now())
-  user        User?     @relation(fields: [userId], references: [id])
+  id           String    @id @default(cuid())
+  userId       String?
+  url          String
+  totalScore   Int
+  mobileScore  Int       @default(0)
+  speedScore   Int       @default(0)
+  seoScore     Int       @default(0)
+  contentScore Int       @default(0)
+  socialScore  Int       @default(0)
+  pricingScore Int       @default(0)
+  paymentScore Int       @default(0)
+  aiScore      Int       @default(0)
+  trustScore   Int       @default(0)
+  contactScore Int       @default(0)
+  rawData      Json?
+  pdfUrl       String?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([userId])
   @@index([url])
+  @@index([createdAt])
+  @@index([totalScore])
 }
 
 model Contact {
-  id        BigInt        @id @default(autoincrement())
-  userId    BigInt
+  id        String        @id @default(cuid())
+  userId    String
   name      String?
   phone     String
   email     String?
   notes     String?
   tags      Json?
+  deletedAt DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+
+  @@index([userId])
+  @@index([phone])
 }
 
 model Conversation {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt
-  contactId BigInt?
+  id        String   @id @default(cuid())
+  userId    String
+  contactId String?
   waId      String?
   messages  Json?
   status    String   @default("active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  contact   Contact? @relation(fields: [contactId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
 }
 
 model CatalogItem {
-  id          BigInt   @id @default(autoincrement())
-  userId      BigInt
+  id          String   @id @default(cuid())
+  userId      String
   name        String
   description String?
   priceEgp    Decimal?
@@ -160,64 +219,136 @@ model CatalogItem {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
 }
 
 model Review {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt
+  id         String   @id @default(cuid())
+  userId     String
   authorName String
-  content   String
-  rating    Int
-  source    String?
-  isApproved Boolean @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  content    String
+  rating     Int
+  source     String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isApproved])
+  @@index([rating])
 }
 
 model SocialAccount {
-  id        BigInt     @id @default(autoincrement())
-  userId    BigInt
-  platform  String
-  handle    String?
-  token     String?
-  isActive  Boolean    @default(true)
-  posts     SocialPost[]
-  user      User       @relation(fields: [userId], references: [id])
+  id       String        @id @default(cuid())
+  userId   String
+  platform String
+  handle   String?
+  token    String?
+  isActive Boolean       @default(true)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts    SocialPost[]
 
   @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
 }
 
 model SocialPost {
-  id          BigInt        @id @default(autoincrement())
-  accountId   BigInt
+  id          String          @id @default(cuid())
+  accountId   String
   content     String
   mediaUrls   Json?
   scheduledAt DateTime?
   postedAt    DateTime?
-  status      String        @default("draft")
+  status      String          @default("draft")
+  account     SocialAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   analytics   SocialAnalytics?
-  account     SocialAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([status])
+  @@index([scheduledAt])
 }
 
 model SocialAnalytics {
-  id        BigInt     @id @default(autoincrement())
-  postId    BigInt     @unique
+  id        String     @id @default(cuid())
+  postId    String     @unique
   likes     Int        @default(0)
   shares    Int        @default(0)
   comments  Int        @default(0)
   clicks    Int        @default(0)
   reach     Int        @default(0)
   updatedAt DateTime   @updatedAt
-  post      SocialPost @relation(fields: [postId], references: [id])
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model WhatsAppTemplate {
-  id        BigInt   @id @default(autoincrement())
-  name      String
-  category  String   @default("marketing")
-  content   String
-  language  String   @default("ar")
-  status    String   @default("approved")
+  id       String   @id @default(cuid())
+  name     String
+  category String   @default("marketing")
+  content  String
+  language String   @default("ar")
+  status   String   @default("approved")
   createdAt DateTime @default(now())
+}
+
+model Partner {
+  id            String              @id @default(cuid())
+  userId        String              @unique
+  firmName      String
+  referralCode  String              @unique
+  tier          String              @default("bronze")
+  commissionPct Int                 @default(15)
+  referredCount Int                 @default(0)
+  activeSince   DateTime            @default(now())
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commissions   PartnerCommission[]
+
+  @@index([referralCode])
+  @@index([tier])
+  @@index([activeSince])
+}
+
+model PartnerCommission {
+  id            String   @id @default(cuid())
+  partnerId     String
+  clientUserId  String?
+  amountEgp     Int
+  status        String   @default("pending")
+  periodStart   DateTime?
+  periodEnd     DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  partner       Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  clientUser    User?    @relation(fields: [clientUserId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([paidAt])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  authorId    String
+  slug        String   @unique
+  title       String
+  titleAr     String?
+  excerpt     String?
+  content     String
+  contentAr   String?
+  imageUrl    String?
+  tags        Json?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([publishedAt])
+  @@index([authorId])
 }

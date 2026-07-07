@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     const audit = await prisma.audit.create({
       data: {
-        userId: user?.userId ? Number(user.userId) : null,
+        userId: user?.userId || null,
         url,
         totalScore: score.totalScore,
         mobileScore: scan.mobileScore,
@@ -34,22 +34,27 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ audit: { id: Number(audit.id), ...score, url } });
+    return NextResponse.json({ audit: { id: audit.id, ...score, url } });
   } catch {
     return NextResponse.json({ error: "Audit failed" }, { status: 500 });
   }
 }
 
-export async function GET(req: NextRequest) {
-  const user = await requireAuth();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function GET() {
+  try {
+    const user = await requireAuth();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const audits = await prisma.audit.findMany({
+      where: { userId: user.userId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+
+    return NextResponse.json({ audits });
+  } catch {
+    return NextResponse.json({ error: "Failed to fetch audits" }, { status: 500 });
   }
-  const audits = await prisma.audit.findMany({
-    where: { userId: Number(user.userId) },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
-  const serialized = audits.map((a) => ({ ...a, id: Number(a.id) }));
-  return NextResponse.json({ audits: serialized });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { verifyPassword, signToken } from "@/lib/auth";
+import { verifyPassword, createSession, setCookieOptions } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -8,26 +8,26 @@ export async function POST(req: Request) {
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
+
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
+
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
-    const token = signToken({ userId: Number(user.id), email: user.email });
+
+    const { accessToken, refreshToken } = await createSession(user.id);
+
     const res = NextResponse.json({
-      user: { id: Number(user.id), email: user.email, name: user.name },
-      token,
+      user: { id: user.id, email: user.email, name: user.name },
     });
-    res.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
+
+    res.cookies.set("token", accessToken, setCookieOptions(900));
+    res.cookies.set("refresh_token", refreshToken, setCookieOptions(30 * 86400));
+
     return res;
   } catch {
     return NextResponse.json({ error: "Login failed" }, { status: 500 });

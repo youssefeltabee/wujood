@@ -8,7 +8,7 @@ import { generatePdf } from "@/lib/audit/report";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const audit = await prisma.audit.findUnique({ where: { id: BigInt(id) } });
+    const audit = await prisma.audit.findUnique({ where: { id } });
     if (!audit) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const score = computeScore({
       mobileScore: audit.mobileScore, speedScore: audit.speedScore,
