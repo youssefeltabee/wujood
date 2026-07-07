@@ -41,7 +41,7 @@ export function AuditForm() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="example.com"
-          className="flex-1 px-4 py-3 border border-w-sand rounded-xl text-base bg-white rtl:text-right transition-colors focus:border-w-teal focus:outline-none focus:ring-2 focus:ring-w-teal/20"
+          className="flex-1 px-4 py-3 border border-border-subtle rounded-xl text-base bg-bg-elevated text-white placeholder-text-muted rtl:text-right transition-colors focus:border-accent-gold focus:outline-none focus:ring-2 focus:ring-accent-gold/20"
           dir="auto"
           autoComplete="url"
           required
@@ -49,7 +49,7 @@ export function AuditForm() {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 bg-w-teal text-white rounded-xl font-semibold hover:bg-w-teal-dark disabled:opacity-60 transition-all duration-200 min-w-[120px] flex items-center justify-center gap-2"
+          className="px-6 py-3 bg-accent-gold text-white rounded-xl font-semibold hover:brightness-110 disabled:opacity-60 transition-all duration-200 min-w-[120px] flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
