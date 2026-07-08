@@ -40,7 +40,7 @@ function AnimatedStat({ target, suffix = "" }: { target: number; suffix?: string
 
 export function StatsSection() {
   return (
-    <section className="relative z-10 px-6">
+    <section className="relative z-10 -mt-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-bg-surface rounded-3xl border border-border-subtle overflow-hidden">
           <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border-subtle">

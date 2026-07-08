@@ -1,0 +1,293 @@
+b9eeb56 task-3: recolor UI components for dark theme
+
+ .superpowers/sdd/task-3-brief.md           | 36 ++++++++++++++++++++++++++++++
+ src/components/audit/AuditForm.tsx         |  4 ++--
+ src/components/audit/CategoryBreakdown.tsx |  6 ++---
+ src/components/audit/ScoreCard.tsx         |  2 +-
+ src/components/ui/GeometricPattern.tsx     | 10 ++++-----
+ src/components/ui/HeroIllustration.tsx     | 20 ++++++++---------
+ src/components/ui/Logo.tsx                 | 12 +++++-----
+ src/components/ui/WhatsAppButton.tsx       |  2 +-
+ 8 files changed, 64 insertions(+), 28 deletions(-)
+
+diff --git a/.superpowers/sdd/task-3-brief.md b/.superpowers/sdd/task-3-brief.md
+new file mode 100644
+index 0000000..5541c52
+--- /dev/null
++++ b/.superpowers/sdd/task-3-brief.md
+@@ -0,0 +1,36 @@
++### Task 3: UI Components ÔÇö Recolor for dark theme
++
++**Files:**
++- Modify: `src/components/ui/Logo.tsx`
++- Modify: `src/components/ui/WhatsAppButton.tsx`
++- Modify: `src/components/ui/GeometricPattern.tsx`
++- Modify: `src/components/ui/HeroIllustration.tsx`
++- Modify: `src/components/audit/AuditForm.tsx`
++- Modify: `src/components/audit/ScoreCard.tsx`
++- Modify: `src/components/audit/CategoryBreakdown.tsx`
++- Modify: `src/hooks/useScrollReveal.ts`
++
++- [ ] **Step 1: Recolor Logo.tsx**
++
++Change SVG stroke colors from `#0D7377` (teal) to `#D4A853` (gold). Change text colors to `text-white` and `text-accent-gold`.
++
++- [ ] **Step 2: Recolor WhatsAppButton.tsx**
++
++Update to use gold accent colors instead of teal/green.
++
++- [ ] **Step 3: Recolor GeometricPattern.tsx**
++
++Update the pattern opacity and color for dark background.
++
++- [ ] **Step 4: Recolor HeroIllustration.tsx**
++
++Update to dark surface background, gold accent bars, white text. Keep the score card mockup structure but restyle it.
++
++- [ ] **Step 5: Recolor audit components**
++
++Update AuditForm, ScoreCard, CategoryBreakdown to use dark surface backgrounds and gold/white text.
++
++- [ ] **Step 6: Commit**
++
++---
++
+diff --git a/src/components/audit/AuditForm.tsx b/src/components/audit/AuditForm.tsx
+index a898b3f..e655d00 100644
+--- a/src/components/audit/AuditForm.tsx
++++ b/src/components/audit/AuditForm.tsx
+@@ -34,29 +34,29 @@ export function AuditForm() {
+   }
+ 
+   return (
+     <form onSubmit={handleSubmit} className="w-full">
+       <div className="flex gap-2">
+         <input
+           type="url"
+           value={url}
+           onChange={(e) => setUrl(e.target.value)}
+           placeholder="example.com"
+-          className="flex-1 px-4 py-3 border border-w-sand rounded-xl text-base bg-white rtl:text-right transition-colors focus:border-w-teal focus:outline-none focus:ring-2 focus:ring-w-teal/20"
++          className="flex-1 px-4 py-3 border border-border-subtle rounded-xl text-base bg-bg-elevated text-white placeholder-text-muted rtl:text-right transition-colors focus:border-accent-gold focus:outline-none focus:ring-2 focus:ring-accent-gold/20"
+           dir="auto"
+           autoComplete="url"
+           required
+         />
+         <button
+           type="submit"
+           disabled={loading}
+-          className="px-6 py-3 bg-w-teal text-white rounded-xl font-semibold hover:bg-w-teal-dark disabled:opacity-60 transition-all duration-200 min-w-[120px] flex items-center justify-center gap-2"
++          className="px-6 py-3 bg-accent-gold text-white rounded-xl font-semibold hover:brightness-110 disabled:opacity-60 transition-all duration-200 min-w-[120px] flex items-center justify-center gap-2"
+         >
+           {loading ? (
+             <>
+               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+               </svg>
+               Scanning
+             </>
+           ) : (
+diff --git a/src/components/audit/CategoryBreakdown.tsx b/src/components/audit/CategoryBreakdown.tsx
+index 2c1d605..446fc87 100644
+--- a/src/components/audit/CategoryBreakdown.tsx
++++ b/src/components/audit/CategoryBreakdown.tsx
+@@ -9,21 +9,21 @@ interface CategoryBreakdownProps {
+ const barColor = (s: number) =>
+   s <= 3 ? "bg-red-500" : s <= 6 ? "bg-orange-500" : s <= 8 ? "bg-yellow-500" : "bg-green-500";
+ 
+ export function CategoryBreakdown({ categories, labels, descriptions }: CategoryBreakdownProps) {
+   return (
+     <div className="space-y-4">
+       {Object.entries(categories).map(([key, val]) => (
+         <div key={key}>
+           <div className="flex justify-between text-sm mb-1">
+             <span className="font-medium">{labels[key]?.en || key}</span>
+-            <span className="text-gray-500">{val}/10</span>
++            <span className="text-text-secondary">{val}/10</span>
+           </div>
+-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
++          <div className="h-2 bg-border-subtle rounded-full overflow-hidden">
+             <div className={`h-full rounded-full transition-all ${barColor(val)}`} style={{ width: `${val * 10}%` }} />
+           </div>
+-          <p className="text-xs text-gray-400 mt-0.5">{descriptions[key]?.en || ""}</p>
++          <p className="text-xs text-text-muted mt-0.5">{descriptions[key]?.en || ""}</p>
+         </div>
+       ))}
+     </div>
+   );
+ }
+diff --git a/src/components/audit/ScoreCard.tsx b/src/components/audit/ScoreCard.tsx
+index d14f890..0737916 100644
+--- a/src/components/audit/ScoreCard.tsx
++++ b/src/components/audit/ScoreCard.tsx
+@@ -3,17 +3,17 @@
+ interface ScoreCardProps {
+   score: number;
+   label: { en: string; ar: string };
+ }
+ 
+ const levelColor = (s: number) =>
+   s <= 25 ? "bg-red-500" : s <= 50 ? "bg-orange-500" : s <= 75 ? "bg-yellow-500" : "bg-green-500";
+ 
+ export function ScoreCard({ score, label }: ScoreCardProps) {
+   return (
+-    <div className={`rounded-xl p-8 text-white text-center ${levelColor(score)}`}>
++    <div className={`rounded-xl p-8 text-white text-center border border-border-subtle ${levelColor(score)}`}>
+       <div className="text-6xl font-bold">{score}/100</div>
+       <div className="text-xl mt-2 opacity-90">{label.en}</div>
+       <div className="text-lg mt-1 opacity-75" dir="rtl">{label.ar}</div>
+     </div>
+   );
+ }
+diff --git a/src/components/ui/GeometricPattern.tsx b/src/components/ui/GeometricPattern.tsx
+index 35f8753..c274487 100644
+--- a/src/components/ui/GeometricPattern.tsx
++++ b/src/components/ui/GeometricPattern.tsx
+@@ -1,22 +1,22 @@
+ export function GeometricPattern({ className = "", opacity = 0.04 }: { className?: string; opacity?: number }) {
+   return (
+     <div
+       className={`absolute inset-0 pointer-events-none ${className}`}
+       style={{ opacity }}
+     >
+       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+         <defs>
+           <pattern id="mashrabiya" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+             <rect width="80" height="80" fill="none" />
+-            <circle cx="40" cy="40" r="18" stroke="#0D7377" strokeWidth="1" fill="none" />
+-            <circle cx="40" cy="40" r="10" stroke="#0D7377" strokeWidth="0.5" fill="none" />
+-            <rect x="20" y="20" width="40" height="40" stroke="#0D7377" strokeWidth="0.5" fill="none" />
+-            <line x1="10" y1="40" x2="70" y2="40" stroke="#0D7377" strokeWidth="0.3" />
+-            <line x1="40" y1="10" x2="40" y2="70" stroke="#0D7377" strokeWidth="0.3" />
++            <circle cx="40" cy="40" r="18" stroke="#D4A853" strokeWidth="1" fill="none" />
++            <circle cx="40" cy="40" r="10" stroke="#D4A853" strokeWidth="0.5" fill="none" />
++            <rect x="20" y="20" width="40" height="40" stroke="#D4A853" strokeWidth="0.5" fill="none" />
++            <line x1="10" y1="40" x2="70" y2="40" stroke="#D4A853" strokeWidth="0.3" />
++            <line x1="40" y1="10" x2="40" y2="70" stroke="#D4A853" strokeWidth="0.3" />
+           </pattern>
+         </defs>
+         <rect width="100%" height="100%" fill="url(#mashrabiya)" />
+       </svg>
+     </div>
+   );
+ }
+diff --git a/src/components/ui/HeroIllustration.tsx b/src/components/ui/HeroIllustration.tsx
+index 1eee891..67dbcc3 100644
+--- a/src/components/ui/HeroIllustration.tsx
++++ b/src/components/ui/HeroIllustration.tsx
+@@ -1,47 +1,47 @@
+ export function HeroIllustration() {
+   return (
+     <div className="relative">
+-      <div className="bg-white rounded-2xl shadow-xl border border-w-sand/30 p-6 max-w-sm mx-auto">
++      <div className="bg-bg-surface rounded-2xl shadow-xl border border-border-subtle p-6 max-w-sm mx-auto">
+         <div className="flex items-center justify-between mb-5">
+           <div className="flex items-center gap-2">
+             <div className="w-2 h-2 rounded-full bg-red-400" />
+             <div className="w-2 h-2 rounded-full bg-yellow-400" />
+             <div className="w-2 h-2 rounded-full bg-green-400" />
+           </div>
+-          <span className="text-xs text-w-charcoal/30 font-medium">wujood.app/audit</span>
++          <span className="text-xs text-text-muted font-medium">wujood.app/audit</span>
+         </div>
+         <div className="text-center mb-5">
+-          <div className="text-5xl font-bold text-w-charcoal mb-1">34</div>
+-          <div className="text-xs text-w-charcoal/40 uppercase tracking-wider">Digital Presence Score</div>
+-          <div className="mt-2 inline-block bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1 rounded-full">Faint Signal</div>
++          <div className="text-5xl font-bold text-white mb-1">34</div>
++          <div className="text-xs text-text-secondary uppercase tracking-wider">Digital Presence Score</div>
++          <div className="mt-2 inline-block bg-bg-elevated text-accent-gold text-xs font-semibold px-3 py-1 rounded-full">Faint Signal</div>
+         </div>
+         <div className="space-y-2.5">
+           {[
+             { label: "Mobile", pct: 70 },
+             { label: "Speed", pct: 40 },
+             { label: "SEO", pct: 20 },
+             { label: "Social", pct: 10 },
+             { label: "Pricing", pct: 30 },
+           ].map((bar) => (
+             <div key={bar.label}>
+               <div className="flex justify-between text-xs mb-0.5">
+-                <span className="text-w-charcoal/50">{bar.label}</span>
+-                <span className="text-w-charcoal/30">{bar.pct}%</span>
++                <span className="text-text-secondary">{bar.label}</span>
++                <span className="text-text-muted">{bar.pct}%</span>
+               </div>
+-              <div className="h-1.5 bg-w-sand/50 rounded-full overflow-hidden">
++              <div className="h-1.5 bg-border-subtle rounded-full overflow-hidden">
+                 <div
+                   className="h-full rounded-full"
+                   style={{ width: `${bar.pct}%`, backgroundColor: bar.pct < 30 ? "#ef4444" : bar.pct < 60 ? "#f97316" : "#22c55e" }}
+                 />
+               </div>
+             </div>
+           ))}
+         </div>
+-        <div className="mt-4 pt-4 border-t border-w-sand/20 flex justify-between text-xs text-w-charcoal/30">
++        <div className="mt-4 pt-4 border-t border-border-subtle flex justify-between text-xs text-text-muted">
+           <span>10 categories checked</span>
+-          <span className="text-w-teal font-medium">View full report ÔåÆ</span>
++          <span className="text-accent-gold font-medium">View full report ÔåÆ</span>
+         </div>
+       </div>
+     </div>
+   );
+ }
+diff --git a/src/components/ui/Logo.tsx b/src/components/ui/Logo.tsx
+index cee27a6..03979f2 100644
+--- a/src/components/ui/Logo.tsx
++++ b/src/components/ui/Logo.tsx
+@@ -1,23 +1,23 @@
+ import Link from "next/link";
+ 
+ export function Logo({ href = "/", showWordmark = true }: { href?: string; showWordmark?: boolean }) {
+   const mark = (
+     <div className="flex items-center gap-2">
+       <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+-        <circle cx="16" cy="16" r="15" stroke="#0D7377" strokeWidth="2" />
+-        <path d="M10 20c0-4 2-8 6-8s6 4 6 8" stroke="#0D7377" strokeWidth="2.5" strokeLinecap="round" />
+-        <path d="M12 22c0-3 1.5-5.5 4-5.5s4 2.5 4 5.5" stroke="#C85A48" strokeWidth="2" strokeLinecap="round" />
+-        <circle cx="22" cy="10" r="1.5" fill="#C85A48" />
++        <circle cx="16" cy="16" r="15" stroke="#D4A853" strokeWidth="2" />
++        <path d="M10 20c0-4 2-8 6-8s6 4 6 8" stroke="#D4A853" strokeWidth="2.5" strokeLinecap="round" />
++        <path d="M12 22c0-3 1.5-5.5 4-5.5s4 2.5 4 5.5" stroke="#00C9B7" strokeWidth="2" strokeLinecap="round" />
++        <circle cx="22" cy="10" r="1.5" fill="#00C9B7" />
+       </svg>
+       {showWordmark && (
+         <>
+-          <span className="font-bold text-w-charcoal">Wujood</span>
+-          <span className="text-w-teal font-bold" dir="rtl">┘êÏ¼┘êÏ»</span>
++          <span className="font-bold text-white">Wujood</span>
++          <span className="text-accent-gold font-bold" dir="rtl">┘êÏ¼┘êÏ»</span>
+         </>
+       )}
+     </div>
+   );
+ 
+   if (href) return <Link href={href}>{mark}</Link>;
+   return mark;
+ }
+diff --git a/src/components/ui/WhatsAppButton.tsx b/src/components/ui/WhatsAppButton.tsx
+index 0e5bb4d..f1da5e6 100644
+--- a/src/components/ui/WhatsAppButton.tsx
++++ b/src/components/ui/WhatsAppButton.tsx
+@@ -1,17 +1,17 @@
+ import Link from "next/link";
+ 
+ export function WhatsAppButton() {
+   return (
+     <Link
+       href="https://wa.me/201XXXXXXXXX"
+       target="_blank"
+       rel="noopener noreferrer"
+-      className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-200 hover:shadow-xl"
++      className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-accent-gold rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-200 hover:shadow-xl"
+       aria-label="Chat on WhatsApp"
+     >
+       <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+       </svg>
+     </Link>
+   );
+ }
