@@ -1,5 +1,6 @@
 "use client";
 import { AuditForm } from "@/components/audit/AuditForm";
+import { RevealSection } from "@/components/ui/ScrollReveal";
 export function FinalCTASection() {
   return (
     <section className="py-24 md:py-28 px-6 bg-bg-elevated">
