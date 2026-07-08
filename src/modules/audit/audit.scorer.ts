@@ -1,4 +1,4 @@
-import type { ScanResult } from "./scanner";
+import type { ScanResult } from "./audit.scanner";
 
 export interface ScoreOutput {
   totalScore: number;
@@ -24,16 +24,10 @@ export function computeScore(scan: ScanResult): ScoreOutput {
   return {
     totalScore,
     categories: {
-      mobileScore: scan.mobileScore,
-      speedScore: scan.speedScore,
-      seoScore: scan.seoScore,
-      contentScore: scan.contentScore,
-      socialScore: scan.socialScore,
-      pricingScore: scan.pricingScore,
-      paymentScore: scan.paymentScore,
-      aiScore: scan.aiScore,
-      trustScore: scan.trustScore,
-      contactScore: scan.contactScore,
+      mobileScore: scan.mobileScore, speedScore: scan.speedScore, seoScore: scan.seoScore,
+      contentScore: scan.contentScore, socialScore: scan.socialScore,
+      pricingScore: scan.pricingScore, paymentScore: scan.paymentScore,
+      aiScore: scan.aiScore, trustScore: scan.trustScore, contactScore: scan.contactScore,
     },
     ghostLevel: matched.level,
     ghostLabel: matched.label,

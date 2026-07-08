@@ -1,10 +1,12 @@
 "use client";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { AuditForm } from "@/components/audit/AuditForm";
-import { ThreeScene } from "@/components/hero/ThreeScene";
 import { ScoreOrb } from "@/components/hero/ScoreOrb";
+
+const ThreeScene = dynamic(() => import("@/components/hero/ThreeScene").then((m) => ({ default: m.ThreeScene })), { ssr: false });
 
 const features = ["WhatsApp click-to-chat", "Mobile-friendly site", "Social media setup"];
 
