@@ -1,6 +1,6 @@
 "use client";
 import { Search, Smartphone, CreditCard, Globe } from "lucide-react";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { RevealSection } from "@/components/ui/ScrollReveal";
 
 const painPoints = [
   { icon: "Search", text: "No pricing on their website" },
@@ -15,15 +15,6 @@ const iconMap: Record<string, React.ReactNode> = {
   CreditCard: <CreditCard className="w-4 h-4" />,
   Globe: <Globe className="w-4 h-4" />,
 };
-
-function RevealSection({ children, delay = 1, className = "", ...props }: { children: React.ReactNode; delay?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const { ref, visible } = useScrollReveal<HTMLDivElement>();
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay} ${visible ? "visible" : ""} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
 
 export function ProblemSection() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 import { ChevronDown } from "lucide-react";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { RevealSection } from "@/components/ui/ScrollReveal";
 
 const faqs = [
   { q: "Do I need technical skills to use Wujood?", a: "No. We set everything up for you. You just tell us what you need and we handle the rest." },
@@ -9,15 +9,6 @@ const faqs = [
   { q: "Do you work with businesses outside Cairo?", a: "We work with Egyptian businesses everywhere. Our entire platform is remote." },
   { q: "Is support available in Arabic?", a: "Yes. Our team speaks Arabic and English. Support is included in every plan." },
 ];
-
-function RevealSection({ children, delay = 1, className = "", ...props }: { children: React.ReactNode; delay?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const { ref, visible } = useScrollReveal<HTMLDivElement>();
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay} ${visible ? "visible" : ""} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
 
 export function FAASection() {
   return (

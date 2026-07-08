@@ -1,59 +1,15 @@
 "use client";
-import { useRef, useCallback } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { GeometricPattern } from "@/components/ui/GeometricPattern";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { RevealSection } from "@/components/ui/ScrollReveal";
+import { TiltCard } from "@/components/ui/TiltCard";
 
 const testimonials = [
   { name: "Ahmed H.", business: "Electronics Shop, Alexandria", quote: "I did not know my website was broken on phones. Wujood fixed it and set up my WhatsApp in two days.", improvement: "+45 points" },
   { name: "Mariam K.", business: "Cairo Bakery Chain", quote: "We had 3 Instagram posts in two years. Now we post weekly and our orders went up 30%.", improvement: "+38 points" },
   { name: "Tarek S.", business: "Furniture Workshop, Mansoura", quote: "Customers kept asking for prices on WhatsApp. Now they can see everything on our site.", improvement: "+52 points" },
 ];
-
-function TiltCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const card = ref.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    const tiltX = (y - 0.5) * -8;
-    const tiltY = (x - 0.5) * 8;
-    const inner = card.querySelector(".card-tilt-inner") as HTMLElement;
-    if (inner) {
-      inner.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-      inner.style.setProperty("--mx", `${x * 100}%`);
-      inner.style.setProperty("--my", `${y * 100}%`);
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    const card = ref.current;
-    if (!card) return;
-    const inner = card.querySelector(".card-tilt-inner") as HTMLElement;
-    if (inner) {
-      inner.style.transform = "rotateX(0deg) rotateY(0deg)";
-    }
-  }, []);
-
-  return (
-    <div ref={ref} className={`card-tilt ${className}`} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-      {children}
-    </div>
-  );
-}
-
-function RevealSection({ children, delay = 1, className = "", ...props }: { children: React.ReactNode; delay?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const { ref, visible } = useScrollReveal<HTMLDivElement>();
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay} ${visible ? "visible" : ""} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
 
 export function TestimonialsSection() {
   return (

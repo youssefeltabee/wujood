@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { GeometricPattern } from "@/components/ui/GeometricPattern";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { useRef, useCallback } from "react";
+import { RevealSection } from "@/components/ui/ScrollReveal";
+import { TiltCard } from "@/components/ui/TiltCard";
 
 const tiers = [
   {
@@ -22,50 +22,6 @@ const tiers = [
     features: ["Everything in Sane'", "AI chatbot in Arabic and English", "Unlimited social accounts", "Custom domain", "Advanced analytics", "Dedicated account manager"],
   },
 ];
-
-function TiltCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const card = ref.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    const tiltX = (y - 0.5) * -8;
-    const tiltY = (x - 0.5) * 8;
-    const inner = card.querySelector(".card-tilt-inner") as HTMLElement;
-    if (inner) {
-      inner.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-      inner.style.setProperty("--mx", `${x * 100}%`);
-      inner.style.setProperty("--my", `${y * 100}%`);
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    const card = ref.current;
-    if (!card) return;
-    const inner = card.querySelector(".card-tilt-inner") as HTMLElement;
-    if (inner) {
-      inner.style.transform = "rotateX(0deg) rotateY(0deg)";
-    }
-  }, []);
-
-  return (
-    <div ref={ref} className={`card-tilt ${className}`} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-      {children}
-    </div>
-  );
-}
-
-function RevealSection({ children, delay = 1, className = "", ...props }: { children: React.ReactNode; delay?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const { ref, visible } = useScrollReveal<HTMLDivElement>();
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay} ${visible ? "visible" : ""} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
 
 export function PricingSection() {
   return (

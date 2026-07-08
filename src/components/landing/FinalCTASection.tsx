@@ -1,16 +1,5 @@
 "use client";
 import { AuditForm } from "@/components/audit/AuditForm";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
-
-function RevealSection({ children, delay = 1, className = "", ...props }: { children: React.ReactNode; delay?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
-  const { ref, visible } = useScrollReveal<HTMLDivElement>();
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay} ${visible ? "visible" : ""} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
-
 export function FinalCTASection() {
   return (
     <section className="py-24 md:py-28 px-6 bg-bg-elevated">
