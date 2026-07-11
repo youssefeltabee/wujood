@@ -36,6 +36,7 @@ model User {
   partner       Partner?
   blogPosts     BlogPost[]
   commissions   PartnerCommission[]
+  payments      Payment[]
 
   @@index([email])
   @@index([role])
@@ -330,6 +331,24 @@ model PartnerCommission {
   @@index([partnerId])
   @@index([status])
   @@index([paidAt])
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+  userId          String
+  amount          Decimal
+  currency        String    @default("EGP")
+  status          String    @default("pending")
+  provider        String    @default("fawry")
+  providerRefNum  String?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerRefNum])
 }
 
 model BlogPost {
