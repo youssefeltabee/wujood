@@ -43,6 +43,18 @@ npm run build   # production build
 
 Push to GitHub, connect repo to Vercel, add `DATABASE_URL` and `JWT_SECRET` as environment variables in Vercel dashboard.
 
+## Modules
+
+| Module | API Routes | Dashboard Page | Status |
+|--------|-----------|----------------|--------|
+| Auth | `/api/auth/*` | Login / Register | ✅ |
+| Audit | `/api/audit/*` | Dashboard + `/audit/[id]` | ✅ |
+| Social Commander | `/api/social/*` | `/dashboard/social` | ✅ |
+| Catalog Builder | `/api/catalog/*` | `/dashboard/catalog` | ✅ |
+| Review System | `/api/reviews/*` | `/dashboard/reviews` | ✅ |
+| AI Chatbot | `/api/chat/*` | `/dashboard/chat` | ✅ |
+| E-commerce | `/api/payments/*` | On catalog items | ✅ |
+
 ## Project Structure
 
 ```
@@ -51,19 +63,44 @@ src/
 │   ├── page.tsx              # Landing page
 │   ├── login/                # Login
 │   ├── register/             # Register
-│   ├── dashboard/            # Dashboard (protected)
+│   ├── dashboard/            # Dashboard + sub-pages
+│   │   ├── page.tsx          # Main dashboard
+│   │   ├── social/           # Social Commander
+│   │   ├── catalog/          # Catalog Builder
+│   │   ├── reviews/          # Review System
+│   │   └── chat/             # AI Chatbot
 │   ├── audit/[id]/           # Audit report (protected)
 │   └── api/                  # API routes
-├── components/audit/         # Audit UI components
+├── components/
+│   ├── ui/                   # 12 primitives (Button, Card, Modal, etc.)
+│   ├── audit/                # Audit UI components
+│   └── catalog/              # Catalog checkout
 ├── config/site.ts            # Tiers, pricing, labels
 ├── lib/
 │   ├── db.ts                 # Prisma client
-│   ├── auth.ts               # JWT + bcrypt
-│   └── audit/
-│       ├── scanner.ts        # URL scanner (10 categories)
-│       ├── scorer.ts         # Scoring algorithm
-│       └── report.tsx        # PDF generator
+│   ├── cache.ts              # Memory cache with TTL
+│   └── utils.ts              # cn() utility
+├── modules/
+│   ├── auth/                 # Auth controllers + service
+│   ├── audit/                # Scanner, scorer, controller
+│   ├── social/               # Social accounts + posts controller
+│   ├── catalog/              # Catalog controller
+│   ├── reviews/              # Reviews controller
+│   ├── chat/                 # Chat controller + OpenAI service
+│   └── payments/             # Fawry controller
 └── middleware.ts             # Auth middleware
+```
+
+## Environment
+
+```env
+DATABASE_URL="postgresql://user:password@host/wujood?sslmode=require"
+JWT_SECRET="generate-a-random-secret-string"
+
+# Optional — mock fallback when not set:
+OPENAI_API_KEY=            # AI Chatbot → uses mock responses
+FAWRY_MERCHANT_CODE=       # Fawry payments → mock mode
+FAWRY_SECURITY_KEY=        # Fawry payments → mock mode
 ```
 
 ## License

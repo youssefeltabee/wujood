@@ -54,3 +54,46 @@ New `src/components/ui/` system — zero dependencies beyond React + Tailwind:
 - Silent 500 → empty state fallback
 - PDF module dynamic import crash
 - Input validation (min 6-char password, email regex)
+
+## v2.1.0 — Engineering Backlog Complete (2026-07-11)
+
+### New Modules
+
+#### Social Commander
+- SocialAccount CRUD (connect FB/IG/LinkedIn, manage accounts)
+- SocialPost CRUD (create, schedule, publish posts)
+- Post analytics (likes, shares, comments, clicks, reach)
+- API: `/api/social/*`, UI: `/dashboard/social`
+
+#### Online Catalog Builder
+- CatalogItem CRUD with categories and pricing
+- Soft-delete, category filtering
+- Fawry checkout on each item (Buy Now)
+- API: `/api/catalog/*`, UI: `/dashboard/catalog`
+
+#### Review & Trust Builder
+- Review CRUD with star ratings
+- Approve/reject moderation workflow
+- Public approved reviews endpoint for embedding
+- API: `/api/reviews/*`, UI: `/dashboard/reviews`
+
+#### AI Chatbot
+- OpenAI gpt-4o-mini via fetch() (Arabic/English)
+- Graceful mock fallback when no API key
+- Conversation history with contact integration
+- API: `/api/chat/*`, UI: `/dashboard/chat`
+
+#### E-commerce Lite
+- Fawry checkout for catalog items
+- Payment model + callback handling
+- API: `/api/payments/fawry/*`
+
+### Architecture
+- 5 new modules: `social/`, `catalog/`, `reviews/`, `chat/`, `payments/`
+- Payment model added to Prisma schema
+- DashboardClientWrapper for ToastProvider across dashboard pages
+- All modules follow controller → route pattern
+
+### Pricing Notes
+- All external API calls (OpenAI, Fawry) gracefully degrade to mock/local mode when keys aren't set
+- Zero-cost to run until API keys are activated
