@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, hostname } = req.nextUrl;
+
+  const subdomainMatch = hostname.match(/^(.+)\.wujood-app\.vercel\.app$/);
+  if (subdomainMatch) {
+    const subdomain = subdomainMatch[1];
+    if (subdomain !== "www") {
+      const url = req.nextUrl.clone();
+      url.pathname = `/website/${subdomain}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   const hasToken = !!req.cookies.get("token")?.value;
 
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/audit")) {
@@ -18,5 +29,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/audit/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/audit/:path*", "/login", "/register", "/website/:path*", "/"],
 };

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword, setCookieOptions, verifyAccessToken } from "./auth.service";
 import { createSession, rotateRefreshToken, revokeRefreshToken } from "./auth.session";
+import { sendWelcomeEmail } from "@/modules/email/email.service";
 
 export async function loginController(req: Request) {
   try {
@@ -62,6 +63,9 @@ export async function registerController(req: Request) {
     });
     res.cookies.set("token", accessToken, setCookieOptions(900));
     res.cookies.set("refresh_token", refreshToken, setCookieOptions(30 * 86400));
+
+    sendWelcomeEmail(user.email, user.name || "there").catch(() => {});
+
     return res;
   } catch {
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
@@ -122,7 +126,7 @@ export async function meController() {
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true, name: true, companyName: true, companySize: true, phone: true, role: true, createdAt: true },
+      select: { id: true, email: true, name: true, companyName: true, companySize: true, phone: true, role: true, businessType: true, createdAt: true },
     });
 
     if (!user) {
@@ -132,5 +136,33 @@ export async function meController() {
     return NextResponse.json({ user });
   } catch {
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
+  }
+}
+
+export async function updateMeController(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const payload = verifyAccessToken(token);
+    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await req.json();
+    const user = await prisma.user.update({
+      where: { id: payload.userId },
+      data: {
+        ...(body.companyName !== undefined && { companyName: body.companyName }),
+        ...(body.businessType !== undefined && { businessType: body.businessType }),
+        ...(body.companySize !== undefined && { companySize: body.companySize }),
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.phone !== undefined && { phone: body.phone }),
+      },
+      select: { id: true, email: true, name: true, companyName: true, companySize: true, phone: true, role: true, businessType: true, createdAt: true },
+    });
+
+    return NextResponse.json({ user });
+  } catch {
+    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }

@@ -13,6 +13,14 @@ function generateFawrySignature(merchantRefNum: string, merchantCode: string, am
   return crypto.createHash("sha256").update(data).digest("hex");
 }
 
+function verifyFawryCallbackSignature(
+  merchantRefCode: string, paymentStatus: string, signature: string, securityKey: string, merchantCode: string,
+) {
+  const data = `${merchantRefCode}${paymentStatus}${merchantCode}${securityKey}`;
+  const expected = crypto.createHash("sha256").update(data).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+
 export async function createFawryCheckoutController(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
@@ -91,6 +99,12 @@ export async function fawryCallbackController(req: NextRequest) {
     const body = await req.json();
     const { merchantRefCode, paymentStatus, signature, ...rest } = body;
 
+    if (FAWRY_SECURITY_KEY && FAWRY_MERCHANT_CODE) {
+      if (!signature || !verifyFawryCallbackSignature(merchantRefCode, paymentStatus, signature, FAWRY_SECURITY_KEY, FAWRY_MERCHANT_CODE)) {
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    }
+
     const payment = await prisma.payment.findFirst({
       where: { providerRefNum: merchantRefCode },
     });
@@ -98,9 +112,35 @@ export async function fawryCallbackController(req: NextRequest) {
 
     const status = paymentStatus === "PAID" || paymentStatus === "SUCCESS" ? "completed" : "failed";
 
+    let subscriptionId: string | null = null;
+    if (status === "completed") {
+      const existingSub = await prisma.subscription.findFirst({
+        where: { userId: payment.userId, status: "active" },
+      });
+
+      if (existingSub) {
+        const interval = (existingSub.interval === "yearly") ? 365 : 30;
+        const updatedSub = await prisma.subscription.update({
+          where: { id: existingSub.id },
+          data: { expiresAt: new Date(Date.now() + interval * 86400000) },
+        });
+        subscriptionId = updatedSub.id;
+      } else {
+        const newSub = await prisma.subscription.create({
+          data: {
+            userId: payment.userId,
+            tier: "kashif",
+            priceEgp: 0,
+            expiresAt: new Date(Date.now() + 30 * 86400000),
+          },
+        });
+        subscriptionId = newSub.id;
+      }
+    }
+
     await prisma.payment.update({
       where: { id: payment.id },
-      data: { status, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+      data: { status, subscriptionId, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
     });
 
     return NextResponse.json({ success: true });
