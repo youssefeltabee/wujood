@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
 
     if (accountSid && authToken && fromNumber) {
-      // @ts-expect-error - optional dep, only loaded when env vars configured
       const twilio = await import("twilio");
       const client = twilio.default(accountSid, authToken);
       const twilioMsg = await client.messages.create({
