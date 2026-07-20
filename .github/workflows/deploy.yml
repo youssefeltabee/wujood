@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm ci
       - run: npx prisma generate
       # Schema is pushed via the Supabase pooler (DATABASE_URL, IPv4) which
       # GitHub-hosted runners can reach. This step is best-effort: it logs the
@@ -33,7 +33,7 @@ jobs:
               echo "Schema push succeeded"
               ;;
             skipped)
-              echo "Schema push skipped (expected on IPv6-only runners; push schema from a machine with Supabase access)"
+              echo "::error::Schema push was skipped unexpectedly (DB schema may be out of sync). This should not happen now that push runs via the Supabase pooler (IPv4). Investigate the runner/job configuration."
               ;;
             failure|cancelled)
               echo "::error::Schema push ${{ steps.db-push.outcome }} — this is NOT the expected IPv6 skip. Check DATABASE_URL/DIRECT_URL and Supabase connectivity."

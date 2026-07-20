@@ -19,3 +19,15 @@ jobs:
         run: npx vercel domains add wujood.app --token=${{ secrets.VERCEL_TOKEN }} --yes || echo "DOMAIN_ALREADY_ADDED_OR_NEEDS_VERIFICATION"
       - name: Inspect required DNS configuration
         run: npx vercel domains inspect wujood.app --token=${{ secrets.VERCEL_TOKEN }}
+      - name: DNS records to add at your registrar
+        run: |
+          echo "==================================================================="
+          echo "Domain wujood.app has been added to the Vercel project 'wujood'."
+          echo "Now add these records at your DNS provider (registrar) for wujood.app:"
+          echo "  Type  Name  Value"
+          echo "  A     @     76.76.21.21"
+          echo "  AAAA  @     2606:1a41::1"
+          echo "  AAAA  @     2606:1a41::2"
+          echo "After saving, Vercel auto-verifies and provisions the SSL cert."
+          echo "Re-run 'vercel domains inspect wujood.app' to confirm verification."
+          echo "==================================================================="
