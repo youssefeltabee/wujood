@@ -1,4 +1,5 @@
 import { MemoryCache } from "@/lib/cache";
+import { isPrivateIP } from "@/lib/utils";
 
 export interface ScanResult {
   mobileScore: number;
@@ -128,6 +129,17 @@ export async function scanUrl(url: string): Promise<ScanResult> {
   }
 
   domainTimestamps.set(domain, Date.now());
+
+  const urlObj = new URL(fullUrl);
+  const hostname = urlObj.hostname;
+  if (hostname === "localhost" || hostname === "0.0.0.0" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname) && isPrivateIP(hostname)) {
+    return {
+      mobileScore: 0, speedScore: 0, seoScore: 0, contentScore: 0,
+      socialScore: 0, pricingScore: 0, paymentScore: 0, aiScore: 0,
+      trustScore: 0, contactScore: 0,
+      rawData: { error: "Invalid URL", url },
+    };
+  }
 
   let html = "";
   const headers: Record<string, string> = {};

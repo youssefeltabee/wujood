@@ -2,13 +2,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-const JWT_SECRET = (() => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret && process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
-    throw new Error("JWT_SECRET environment variable is required in production");
-  }
-  return secret || "wujood-dev-secret-change-in-production";
-})();
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const ACCESS_TOKEN_EXPIRY = "15m";
 

@@ -21,12 +21,14 @@ export async function createSession(userId: string): Promise<{ accessToken: stri
 export async function rotateRefreshToken(
   oldToken: string
 ): Promise<{ accessToken: string; refreshToken: string } | null> {
-  const existing = await prisma.refreshToken.findUnique({ where: { token: oldToken } });
-  if (!existing || existing.revokedAt || existing.expiresAt < new Date()) {
-    return null;
-  }
+  const result = await prisma.refreshToken.updateMany({
+    where: { token: oldToken, revokedAt: null, expiresAt: { gte: new Date() } },
+    data: { revokedAt: new Date() },
+  });
+  if (result.count === 0) return null;
 
-  await prisma.refreshToken.update({ where: { id: existing.id }, data: { revokedAt: new Date() } });
+  const existing = await prisma.refreshToken.findUnique({ where: { token: oldToken } });
+  if (!existing) return null;
 
   const accessToken = signAccessToken({ userId: existing.userId, email: "" });
   const refreshToken = generateRefreshToken();

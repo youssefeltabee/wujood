@@ -99,16 +99,21 @@ export async function fawryCallbackController(req: NextRequest) {
     const body = await req.json();
     const { merchantRefCode, paymentStatus, signature, ...rest } = body;
 
-    if (FAWRY_SECURITY_KEY && FAWRY_MERCHANT_CODE) {
-      if (!signature || !verifyFawryCallbackSignature(merchantRefCode, paymentStatus, signature, FAWRY_SECURITY_KEY, FAWRY_MERCHANT_CODE)) {
-        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-      }
+    if (!FAWRY_SECURITY_KEY || !FAWRY_MERCHANT_CODE) {
+      return NextResponse.json({ error: "Fawry not configured" }, { status: 500 });
+    }
+    if (!signature || !verifyFawryCallbackSignature(merchantRefCode, paymentStatus, signature, FAWRY_SECURITY_KEY, FAWRY_MERCHANT_CODE)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const payment = await prisma.payment.findFirst({
       where: { providerRefNum: merchantRefCode },
     });
     if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+
+    if (payment.status === "completed") {
+      return NextResponse.json({ success: true });
+    }
 
     const status = paymentStatus === "PAID" || paymentStatus === "SUCCESS" ? "completed" : "failed";
 

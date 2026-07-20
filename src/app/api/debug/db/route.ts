@@ -18,7 +18,17 @@ async function dnsResolve(host: string): Promise<string[]> {
   } catch { return ["dns-error"]; }
 }
 
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/modules/auth/auth.service";
+
 export async function GET() {
+  const token = (await cookies()).get("token")?.value;
+  const user = token ? verifyAccessToken(token) : null;
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const isAdmin = await prisma.user.findUnique({ where: { id: user.userId }, select: { role: true } });
+  if (isAdmin?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const result: Record<string, unknown> = {};
   result.hasDatabaseUrl = !!process.env.DATABASE_URL;
   result.hasDirectUrl = !!process.env.DIRECT_URL;

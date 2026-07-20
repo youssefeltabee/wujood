@@ -15,7 +15,7 @@ export function middleware(req: NextRequest) {
 
   const hasToken = !!req.cookies.get("token")?.value;
 
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/audit")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/audit") || pathname.startsWith("/admin")) {
     if (!hasToken) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
@@ -29,5 +29,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/audit/:path*", "/login", "/register", "/website/:path*", "/"],
+  matcher: ["/dashboard/:path*", "/audit/:path*", "/login", "/register", "/website/:path*", "/admin/:path*", "/"],
 };

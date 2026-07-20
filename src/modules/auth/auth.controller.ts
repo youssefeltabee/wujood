@@ -4,8 +4,14 @@ import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword, setCookieOptions, verifyAccessToken } from "./auth.service";
 import { createSession, rotateRefreshToken, revokeRefreshToken } from "./auth.session";
 import { sendWelcomeEmail } from "@/modules/email/email.service";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function loginController(req: Request) {
+  const ip = req.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rl = rateLimit(`login:${ip}`, { interval: 60000, maxRequests: 5 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+  }
   try {
     const { email, password } = await req.json();
     if (!email || !password) {
@@ -64,7 +70,7 @@ export async function registerController(req: Request) {
     res.cookies.set("token", accessToken, setCookieOptions(900));
     res.cookies.set("refresh_token", refreshToken, setCookieOptions(30 * 86400));
 
-    sendWelcomeEmail(user.email, user.name || "there").catch(() => {});
+    sendWelcomeEmail(user.email, user.name || "there").catch((err) => console.error("Welcome email failed:", err));
 
     return res;
   } catch {

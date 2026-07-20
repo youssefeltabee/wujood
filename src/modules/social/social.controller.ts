@@ -12,6 +12,7 @@ export async function listAccountsController() {
     const accounts = await prisma.socialAccount.findMany({
       where: { userId: user.userId },
       orderBy: { platform: "asc" },
+      select: { id: true, platform: true, handle: true, createdAt: true, updatedAt: true },
     });
 
     return NextResponse.json({ accounts });
