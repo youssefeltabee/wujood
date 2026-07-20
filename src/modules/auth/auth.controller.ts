@@ -35,9 +35,8 @@ export async function loginController(req: Request) {
     res.cookies.set("token", accessToken, setCookieOptions(900));
     res.cookies.set("refresh_token", refreshToken, setCookieOptions(30 * 86400));
     return res;
-  } catch (err) {
-    console.error("LOGIN_ERROR:", err);
-    return NextResponse.json({ error: "Login failed", detail: String(err) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }
 
@@ -74,9 +73,8 @@ export async function registerController(req: Request) {
     sendWelcomeEmail(user.email, user.name || "there").catch((err) => console.error("Welcome email failed:", err));
 
     return res;
-  } catch (err) {
-    console.error("REGISTER_ERROR:", err);
-    return NextResponse.json({ error: "Registration failed", detail: String(err) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }
 
