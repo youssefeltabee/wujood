@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npx prisma generate
       # Schema is pushed via the Supabase pooler (DATABASE_URL, IPv4) which
       # GitHub-hosted runners can reach. This step is best-effort: it logs the
