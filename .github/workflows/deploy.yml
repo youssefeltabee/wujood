@@ -15,11 +15,24 @@ jobs:
           cache: npm
       - run: npm install
       - run: npx prisma generate
-      - name: Ensure env vars in Vercel project
+      - name: Ensure env vars in Vercel project via API
         run: |
-          echo "${{ secrets.JWT_SECRET }}" | npx vercel env add JWT_SECRET production preview development --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          echo "${{ secrets.DATABASE_URL }}" | npx vercel env add DATABASE_URL production preview development --yes --token=${{ secrets.VERCEL_TOKEN }} || true
-          echo "${{ secrets.DIRECT_URL }}" | npx vercel env add DIRECT_URL production preview development --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          set +e
+          curl -sf -X POST "https://api.vercel.com/v10/projects/wujood/env" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data-raw "{\"key\":\"DATABASE_URL\",\"value\":\"${{ secrets.DATABASE_URL }}\",\"type\":\"encrypted\",\"target\":[\"production\"]}" \
+            && echo "✓ DATABASE_URL" || echo "→ DATABASE_URL exists or wrong project name"
+          curl -sf -X POST "https://api.vercel.com/v10/projects/wujood/env" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data-raw "{\"key\":\"DIRECT_URL\",\"value\":\"${{ secrets.DIRECT_URL }}\",\"type\":\"encrypted\",\"target\":[\"production\"]}" \
+            && echo "✓ DIRECT_URL" || echo "→ DIRECT_URL exists or wrong project name"
+          curl -sf -X POST "https://api.vercel.com/v10/projects/wujood/env" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data-raw "{\"key\":\"JWT_SECRET\",\"value\":\"${{ secrets.JWT_SECRET }}\",\"type\":\"encrypted\",\"target\":[\"production\"]}" \
+            && echo "✓ JWT_SECRET" || echo "→ JWT_SECRET exists or wrong project name"
       - run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
