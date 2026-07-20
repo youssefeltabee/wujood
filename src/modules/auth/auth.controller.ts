@@ -35,8 +35,9 @@ export async function loginController(req: Request) {
     res.cookies.set("token", accessToken, setCookieOptions(900));
     res.cookies.set("refresh_token", refreshToken, setCookieOptions(30 * 86400));
     return res;
-  } catch {
-    return NextResponse.json({ error: "Login failed" }, { status: 500 });
+  } catch (err) {
+    console.error("LOGIN_ERROR:", err);
+    return NextResponse.json({ error: "Login failed", detail: String(err) }, { status: 500 });
   }
 }
 
