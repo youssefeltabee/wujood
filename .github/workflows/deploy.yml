@@ -15,6 +15,11 @@ jobs:
           cache: npm
       - run: npm install
       - run: npx prisma generate
+      - name: Push database schema
+        run: npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
       - name: Ensure env vars in Vercel project via API
         run: |
           set +e

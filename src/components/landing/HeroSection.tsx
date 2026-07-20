@@ -26,7 +26,7 @@ export function HeroSection() {
         <div className="grid md:grid-cols-5 gap-8 items-center">
           <div className="md:col-span-3 md:pr-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="bg-accent-gold/10 text-accent-gold text-xs font-semibold px-3 py-1 rounded-full tracking-wide">Free — 30 seconds</span>
+              <span className="bg-accent-gold/10 text-accent-gold text-xs font-semibold px-3 py-1 rounded-full tracking-wide">Free • 30s Audit</span>
               <span className="bg-accent-cyan/10 text-accent-cyan text-xs font-semibold px-3 py-1 rounded-full tracking-wide">WhatsApp Included</span>
             </div>
             <h1 className="text-[clamp(2.5rem,8vw,5rem)] md:text-7xl lg:text-8xl font-bold text-text-primary leading-[1.02] mb-5">
