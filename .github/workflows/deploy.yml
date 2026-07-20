@@ -28,11 +28,20 @@ jobs:
       - name: Report schema push result
         if: always()
         run: |
-          if [ "${{ steps.db-push.outcome }}" = "success" ]; then
-            echo "Schema push succeeded"
-          else
-            echo "Schema push skipped/failed (expected on IPv6-only runners; push schema from a machine with Supabase access)"
-          fi
+          case "${{ steps.db-push.outcome }}" in
+            success)
+              echo "Schema push succeeded"
+              ;;
+            skipped)
+              echo "Schema push skipped (expected on IPv6-only runners; push schema from a machine with Supabase access)"
+              ;;
+            failure|cancelled)
+              echo "::error::Schema push ${{ steps.db-push.outcome }} — this is NOT the expected IPv6 skip. Check DATABASE_URL/DIRECT_URL and Supabase connectivity."
+              ;;
+            *)
+              echo "Schema push outcome unknown: ${{ steps.db-push.outcome }}"
+              ;;
+          esac
       - name: Ensure env vars in Vercel project via CLI
         run: |
           npx vercel link --project wujood --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1
