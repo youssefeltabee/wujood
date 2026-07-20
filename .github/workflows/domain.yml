@@ -1,0 +1,21 @@
+name: Setup Domain
+
+on:
+  workflow_dispatch:
+
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Link Vercel project
+        run: npx vercel link --project wujood --token=${{ secrets.VERCEL_TOKEN }} --yes
+      - name: List current domains
+        run: npx vercel domains ls --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Add apex domain wujood.app
+        run: npx vercel domains add wujood.app --token=${{ secrets.VERCEL_TOKEN }} --yes || echo "DOMAIN_ALREADY_ADDED_OR_NEEDS_VERIFICATION"
+      - name: Inspect required DNS configuration
+        run: npx vercel domains inspect wujood.app --token=${{ secrets.VERCEL_TOKEN }}

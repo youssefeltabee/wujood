@@ -15,9 +15,9 @@ jobs:
           cache: npm
       - run: npm install
       - run: npx prisma generate
-      # GH runners are IPv6-only and cannot reach Supabase (IPv4 pooler only),
-      # so schema is pushed from a local machine. This step is best-effort:
-      # it logs whether it succeeded instead of silently masking failures.
+      # Schema is pushed via the Supabase pooler (DATABASE_URL, IPv4) which
+      # GitHub-hosted runners can reach. This step is best-effort: it logs the
+      # outcome so a real failure is never masked as the expected skip.
       - name: Push database schema (best-effort)
         id: db-push
         continue-on-error: true
