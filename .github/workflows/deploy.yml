@@ -24,9 +24,9 @@ jobs:
       - name: Ensure env vars in Vercel project via CLI
         run: |
           npx vercel link --project wujood --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1
-          echo "${{ secrets.DATABASE_URL }}" | npx vercel env add DATABASE_URL production --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DATABASE_URL skipped"
-          echo "${{ secrets.DIRECT_URL }}" | npx vercel env add DIRECT_URL production --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DIRECT_URL skipped"
-          echo "${{ secrets.JWT_SECRET }}" | npx vercel env add JWT_SECRET production --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ JWT_SECRET skipped"
+          echo "${{ secrets.DATABASE_URL }}" | npx vercel env add DATABASE_URL production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DATABASE_URL skipped"
+          echo "${{ secrets.DIRECT_URL }}" | npx vercel env add DIRECT_URL production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DIRECT_URL skipped"
+          echo "${{ secrets.JWT_SECRET }}" | npx vercel env add JWT_SECRET production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ JWT_SECRET skipped"
       - run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
