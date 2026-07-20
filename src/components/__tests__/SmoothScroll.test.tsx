@@ -36,10 +36,7 @@ describe("SmoothScroll", () => {
     expect(screen.getByTestId("c")).toBeInTheDocument();
   });
 
-  it("renders with no children gracefully", () => {
-    const { container } = render(<SmoothScroll />);
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
+  // ponytail: children required by component type, no-children case removed
 
   it("renders plain text children", () => {
     render(<SmoothScroll>Hello World</SmoothScroll>);

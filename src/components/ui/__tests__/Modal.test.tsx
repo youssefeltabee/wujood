@@ -5,11 +5,11 @@ import { Modal } from "../Modal";
 
 beforeAll(() => {
   // jsdom does not natively implement HTMLDialogElement methods
-  HTMLDialogElement.prototype.showModal = vi.fn(function mockShowModal() {
-    (this as HTMLDialogElement).open = true;
+  HTMLDialogElement.prototype.showModal = vi.fn(function mockShowModal(this: HTMLDialogElement) {
+    this.open = true;
   });
-  HTMLDialogElement.prototype.close = vi.fn(function mockClose() {
-    (this as HTMLDialogElement).open = false;
+  HTMLDialogElement.prototype.close = vi.fn(function mockClose(this: HTMLDialogElement) {
+    this.open = false;
   });
 });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach, beforeEach, useFakeTimers } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { StatsSection } from "../StatsSection";
 

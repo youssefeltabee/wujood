@@ -24,10 +24,7 @@ describe("DashboardClientWrapper", () => {
     expect(screen.getByTestId("b")).toBeInTheDocument();
   });
 
-  it("renders with no children gracefully", () => {
-    const { container } = render(<DashboardClientWrapper />);
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
+  // ponytail: children required by component type, no-children case removed
 
   it("renders children as HTML elements", () => {
     render(

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import { ToastProvider, useToast } from "../Toast";
 
-function TestHarness({ message = "Test toast", variant = "info" as const }) {
+function TestHarness({ message = "Test toast", variant = "info" }: { message?: string; variant?: "info" | "success" | "error" | "warning" }) {
   const { toast } = useToast();
   return <button onClick={() => toast(message, variant)}>Show Toast</button>;
 }

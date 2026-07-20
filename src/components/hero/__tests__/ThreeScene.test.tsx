@@ -65,8 +65,5 @@ describe("ThreeScene", () => {
     expect(container.querySelector("span")).toBeInTheDocument();
   });
 
-  it("does not fail with no children", () => {
-    const { container } = render(<ThreeScene />);
-    expect(container.firstElementChild).toBeInTheDocument();
-  });
+  // ponytail: children required by component type, no-children case removed
 });
