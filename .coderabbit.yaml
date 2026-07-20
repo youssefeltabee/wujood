@@ -22,7 +22,7 @@ reviews:
         Check for TypeScript best practices, proper typing (avoid `any`), async error handling, and Prisma query optimization.
     - path: "src/**/*.tsx"
       instructions: |
-        Review React patterns, server/client component boundaries, hook dependencies, and Tailwind class organization.
+        Review React patterns, server/client component boundaries, hook dependencies, Tailwind class organization, and Prisma query optimization.
     - path: "prisma/**/*.prisma"
       instructions: |
         Check schema design, indexing, and relations.
