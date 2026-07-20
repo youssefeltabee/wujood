@@ -73,8 +73,9 @@ export async function registerController(req: Request) {
     sendWelcomeEmail(user.email, user.name || "there").catch((err) => console.error("Welcome email failed:", err));
 
     return res;
-  } catch {
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+  } catch (err) {
+    console.error("REGISTER_ERROR:", err);
+    return NextResponse.json({ error: "Registration failed", detail: String(err) }, { status: 500 });
   }
 }
 
