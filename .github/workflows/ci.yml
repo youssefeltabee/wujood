@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/wujood"
+  DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/wujood"
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -19,4 +23,3 @@ jobs:
       - run: npx prisma validate
       - run: npx tsc --noEmit
       - run: npm test || true
-
