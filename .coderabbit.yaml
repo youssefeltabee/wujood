@@ -2,7 +2,7 @@
 # Docs: https://docs.coderabbit.ai/reference/configuration
 
 language: "en"
-early_access: true
+early_access: false
 reviews:
   profile: "chill"
   request_changes_workflow: false
@@ -15,17 +15,20 @@ reviews:
     - "!**/*.map"
     - "!**/node_modules/**"
     - "!**/vendor/**"
-    - "!.next/**"
+    - "!**/.next/**"
   path_instructions:
     - path: "src/**/*.ts"
       instructions: |
         Check for TypeScript best practices, proper typing (avoid `any`), async error handling, and Prisma query optimization.
     - path: "src/**/*.tsx"
       instructions: |
-        Review React 19 patterns, server/client component boundaries, hook dependencies, and Tailwind class organization.
+        Review React patterns, server/client component boundaries, hook dependencies, and Tailwind class organization.
     - path: "prisma/**/*.prisma"
       instructions: |
-        Check schema design, indexing, relations, and data migration safety.
+        Check schema design, indexing, and relations.
+    - path: "prisma/migrations/**/*.sql"
+      instructions: |
+        Check migration safety, destructive changes, locking, backfills, and rollback compatibility.
   auto_review:
     enabled: true
     drafts: false
