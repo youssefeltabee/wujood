@@ -2,10 +2,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET environment variable is required");
+  return secret;
 }
-const JWT_SECRET = process.env.JWT_SECRET;
 
 const ACCESS_TOKEN_EXPIRY = "15m";
 
@@ -18,12 +19,12 @@ export function verifyPassword(password: string, hash: string): Promise<boolean>
 }
 
 export function signAccessToken(payload: { userId: string; email: string }): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY });
 }
 
 export function verifyAccessToken(token: string): { userId: string; email: string } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+    return jwt.verify(token, getJwtSecret()) as { userId: string; email: string };
   } catch {
     return null;
   }
