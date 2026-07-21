@@ -25,7 +25,7 @@ describe("HeroSection", () => {
 
   it("renders feature badges", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Free — 30 seconds")).toBeInTheDocument();
+    expect(screen.getByText("Free • 30s Audit")).toBeInTheDocument();
     expect(screen.getByText("WhatsApp Included")).toBeInTheDocument();
   });
 

@@ -3,8 +3,8 @@ import { signAccessToken, generateRefreshToken } from "./auth.service";
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
-export async function createSession(userId: string): Promise<{ accessToken: string; refreshToken: string }> {
-  const accessToken = signAccessToken({ userId, email: "" });
+export async function createSession(userId: string, email?: string): Promise<{ accessToken: string; refreshToken: string }> {
+  const accessToken = signAccessToken({ userId, email: email ?? "" });
   const refreshToken = generateRefreshToken();
 
   await prisma.refreshToken.create({
@@ -30,7 +30,7 @@ export async function rotateRefreshToken(
   const existing = await prisma.refreshToken.findUnique({ where: { token: oldToken } });
   if (!existing) return null;
 
-  const accessToken = signAccessToken({ userId: existing.userId, email: "" });
+  const accessToken = signAccessToken({ userId: existing.userId, email: existing.userId });
   const refreshToken = generateRefreshToken();
 
   await prisma.refreshToken.create({

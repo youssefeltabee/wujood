@@ -1,3 +1,4 @@
+import { lookup as dnsLookup } from "dns/promises";
 import { MemoryCache } from "@/lib/cache";
 import { isPrivateIP } from "@/lib/utils";
 
@@ -19,6 +20,15 @@ const URL_CACHE_MS = 30_000;
 const DOMAIN_RATE_LIMIT_MS = 10_000;
 const scanCache = new MemoryCache<ScanResult>(URL_CACHE_MS);
 const domainTimestamps = new Map<string, number>();
+
+function errorResult(error: string) {
+  return {
+    mobileScore: 0, speedScore: 0, seoScore: 0, contentScore: 0,
+    socialScore: 0, pricingScore: 0, paymentScore: 0, aiScore: 0,
+    trustScore: 0, contactScore: 0,
+    rawData: { error, url: "" },
+  } satisfies ScanResult;
+}
 
 function extractDomain(url: string): string {
   try { return new URL(url).hostname; }
@@ -131,14 +141,25 @@ export async function scanUrl(url: string): Promise<ScanResult> {
   domainTimestamps.set(domain, Date.now());
 
   const urlObj = new URL(fullUrl);
+
+  if (!["http:", "https:"].includes(urlObj.protocol)) {
+    return errorResult("Invalid protocol");
+  }
+
   const hostname = urlObj.hostname;
   if (hostname === "localhost" || hostname === "0.0.0.0" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname) && isPrivateIP(hostname)) {
-    return {
-      mobileScore: 0, speedScore: 0, seoScore: 0, contentScore: 0,
-      socialScore: 0, pricingScore: 0, paymentScore: 0, aiScore: 0,
-      trustScore: 0, contactScore: 0,
-      rawData: { error: "Invalid URL", url },
-    };
+    return errorResult("Invalid URL");
+  }
+
+  try {
+    const addresses = await dnsLookup(hostname, { all: true });
+    for (const addr of addresses) {
+      if (isPrivateIP(addr.address) || addr.address === "127.0.0.1" || addr.address === "::1") {
+        return errorResult("Target resolves to private IP");
+      }
+    }
+  } catch {
+    return errorResult("Could not resolve hostname");
   }
 
   let html = "";
@@ -146,10 +167,14 @@ export async function scanUrl(url: string): Promise<ScanResult> {
   let fetchSuccess = false;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(fullUrl, {
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
       headers: { "User-Agent": "WujoodAudit/1.0" },
+      redirect: "error",
     });
+    clearTimeout(timeout);
     html = await res.text();
     res.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
     fetchSuccess = true;

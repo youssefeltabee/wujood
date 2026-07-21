@@ -28,7 +28,7 @@ export async function loginController(req: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const { accessToken, refreshToken } = await createSession(user.id);
+    const { accessToken, refreshToken } = await createSession(user.id, user.email);
     const res = NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name },
     });
@@ -63,7 +63,7 @@ export async function registerController(req: Request) {
       data: { email, passwordHash, name: name || null },
     });
 
-    const { accessToken, refreshToken } = await createSession(user.id);
+    const { accessToken, refreshToken } = await createSession(user.id, user.email);
     const res = NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name },
     });

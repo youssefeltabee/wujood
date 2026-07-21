@@ -18,6 +18,7 @@ function verifyFawryCallbackSignature(
 ) {
   const data = `${merchantRefCode}${paymentStatus}${merchantCode}${securityKey}`;
   const expected = crypto.createHash("sha256").update(data).digest("hex");
+  if (signature.length !== expected.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
 
@@ -117,35 +118,42 @@ export async function fawryCallbackController(req: NextRequest) {
 
     const status = paymentStatus === "PAID" || paymentStatus === "SUCCESS" ? "completed" : "failed";
 
-    let subscriptionId: string | null = null;
-    if (status === "completed") {
-      const existingSub = await prisma.subscription.findFirst({
-        where: { userId: payment.userId, status: "active" },
-      });
-
-      if (existingSub) {
-        const interval = (existingSub.interval === "yearly") ? 365 : 30;
-        const updatedSub = await prisma.subscription.update({
-          where: { id: existingSub.id },
-          data: { expiresAt: new Date(Date.now() + interval * 86400000) },
+    await prisma.$transaction(async (tx) => {
+      if (status === "completed") {
+        const existingSub = await tx.subscription.findFirst({
+          where: { userId: payment.userId, status: "active" },
         });
-        subscriptionId = updatedSub.id;
+
+        if (existingSub) {
+          const interval = (existingSub.interval === "yearly") ? 365 : 30;
+          const updatedSub = await tx.subscription.update({
+            where: { id: existingSub.id },
+            data: { expiresAt: new Date(Date.now() + interval * 86400000) },
+          });
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: { status, subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+          });
+        } else {
+          const newSub = await tx.subscription.create({
+            data: {
+              userId: payment.userId,
+              tier: "kashif",
+              priceEgp: 0,
+              expiresAt: new Date(Date.now() + 30 * 86400000),
+            },
+          });
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: { status, subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+          });
+        }
       } else {
-        const newSub = await prisma.subscription.create({
-          data: {
-            userId: payment.userId,
-            tier: "kashif",
-            priceEgp: 0,
-            expiresAt: new Date(Date.now() + 30 * 86400000),
-          },
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: { status, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
         });
-        subscriptionId = newSub.id;
       }
-    }
-
-    await prisma.payment.update({
-      where: { id: payment.id },
-      data: { status, subscriptionId, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
     });
 
     return NextResponse.json({ success: true });
