@@ -85,16 +85,16 @@ interface TabPanelProps {
 
 function TabPanel({ value, activeTab, children, className }: TabPanelProps) {
   const [visible, setVisible] = useState(value === activeTab);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (value === activeTab) {
-      clearTimeout(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
       setVisible(true);
     } else {
       timerRef.current = setTimeout(() => setVisible(false), 150);
     }
-    return () => clearTimeout(timerRef.current);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [value, activeTab]);
 
   if (!visible && value !== activeTab) return null;
