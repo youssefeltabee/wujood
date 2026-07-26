@@ -4,6 +4,29 @@ import { FooterSection } from "../FooterSection";
 
 vi.mock("next/link", () => ({ default: vi.fn(({ children, href, className }) => <a href={href} className={className}>{children}</a>) }));
 vi.mock("@/components/ui/Logo", () => ({ Logo: () => <div data-testid="logo" /> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en",
+    setLocale: vi.fn(),
+    dir: "ltr",
+    t: (key: string, params?: Record<string, string>) => {
+      const dict: Record<string, string> = {
+        "footer.tagline": "Website builder, WhatsApp CRM, social media management, and AI chatbot for Egyptian SMEs. From 1,250 EGP a month.",
+        "footer.quick-links": "Quick Links",
+        "footer.contact": "Contact",
+        "footer.privacy": "Privacy",
+        "footer.terms": "Terms",
+        "footer.home": "Home",
+        "footer.pricing": "Pricing",
+        "footer.how-it-works": "How It Works",
+        "footer.faq": "FAQ",
+      };
+      let val = dict[key] ?? key;
+      if (params) for (const [k, v] of Object.entries(params)) val = val.replace(`{${k}}`, v);
+      return val;
+    },
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 

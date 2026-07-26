@@ -11,6 +11,12 @@ vi.mock("@/components/ui/Carousel", () => ({
     </div>
   ),
 }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en", setLocale: vi.fn(), dir: "ltr",
+    t: (key: string) => ({ "section.testimonials.label":"Real Results","section.testimonials.heading":"Businesses we have helped show up online.","section.testimonials.cta":"Start Now" }[key] ?? key),
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 
@@ -63,7 +69,7 @@ describe("TestimonialsSection", () => {
 
   it("renders CTA link to /register", () => {
     render(<TestimonialsSection />);
-    const cta = screen.getByText("ابدأ دلوقتي");
+    const cta = screen.getByText("Start Now");
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });
 

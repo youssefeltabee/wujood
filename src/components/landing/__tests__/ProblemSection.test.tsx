@@ -3,6 +3,17 @@ import { render, screen } from "@testing-library/react";
 import { ProblemSection } from "../ProblemSection";
 
 vi.mock("@/components/ui/ScrollReveal", () => ({ RevealSection: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en", setLocale: vi.fn(), dir: "ltr",
+    t: (key: string, params?: Record<string, string>) => {
+      const dict: Record<string, string> = { "section.problem.label":"The Problem","section.problem.heading":"8 out of 10 Egyptian SMEs are invisible online.","section.problem.body":"That is roughly {amount} in missed business every year. Not because their product is bad — because customers could not find them when they needed them.","section.problem.pain.1":"No pricing on their website","section.problem.pain.2":"Social media dormant for months","section.problem.pain.3":"No online payment options","section.problem.pain.4":"Hard to find on Google","section.problem.stat":"of Egyptian SMEs have no real online presence","section.problem.source":"Based on an analysis of 500 Egyptian business websites" };
+      let val = dict[key] ?? key;
+      if (params) for (const [k, v] of Object.entries(params)) val = val.replace(`{${k}}`, v);
+      return val;
+    },
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 

@@ -7,6 +7,17 @@ vi.mock("next/link", () => ({ default: vi.fn(({ children, href, className }) => 
 vi.mock("@/components/ui/TiltCard", () => ({ TiltCard: ({ children }: { children: React.ReactNode }) => <div data-testid="tilt-card">{children}</div> }));
 vi.mock("@/components/ui/GeometricPattern", () => ({ GeometricPattern: () => <div data-testid="geo-pattern" /> }));
 vi.mock("@/components/ui/ScrollReveal", () => ({ RevealSection: ({ children }: { children: React.ReactNode }) => <div data-testid="reveal">{children}</div> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en", setLocale: vi.fn(), dir: "ltr",
+    t: (key: string, params?: Record<string, string>) => {
+      const dict: Record<string, string> = { "section.pricing.label":"Pricing","section.pricing.heading":"Plans for every stage of business.","section.pricing.subtext":"All prices in EGP. No hidden fees. Cancel anytime.","section.pricing.annual":"Annual billing: 10 months for 12 (17% off). 7-day free trial on all plans.","section.pricing.most-popular":"Most Popular","section.pricing.see-details":"See Details","section.pricing.start-now":"Start Now","section.pricing.month":"EGP/month","section.pricing.modal.cta":"Start Now — {price} EGP/month","section.pricing.modal.advisor":"Talk to an Advisor","section.pricing.modal.for":"Who is {name} for?","section.pricing.modal.annual":"Annual billing saves 17% • Pay in 3 installments available" };
+      let val = dict[key] ?? key;
+      if (params) for (const [k, v] of Object.entries(params)) val = val.replace(`{${k}}`, v);
+      return val;
+    },
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 
@@ -39,7 +50,7 @@ describe("PricingSection", () => {
     const badges = screen.getAllByText("Most Popular");
     expect(badges).toHaveLength(1);
 
-    const cta = screen.getByText("ابدأ دلوقتي");
+    const cta = screen.getByText("Start Now");
     expect(cta).toBeInTheDocument();
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });

@@ -8,6 +8,12 @@ vi.mock("@/components/ui/Logo", () => ({ Logo: () => <div data-testid="logo" /> 
 vi.mock("@/components/audit/AuditForm", () => ({ AuditForm: () => <div data-testid="audit-form" /> }));
 vi.mock("@/components/hero/ThreeScene", () => ({ ThreeScene: ({ children }: { children: React.ReactNode }) => <div data-testid="three-scene">{children}</div> }));
 vi.mock("@/components/hero/ScoreOrb", () => ({ ScoreOrb: () => <div data-testid="score-orb" /> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en", setLocale: vi.fn(), dir: "ltr",
+    t: (key: string) => ({ "hero.heading":"Your customers are searching for you on WhatsApp right now.","hero.subtext":"If your website is outdated or your social media went quiet","hero.badge.free":"Free • 30s Audit","hero.badge.whatsapp":"WhatsApp Included","nav.login":"Login","nav.cta":"Start Now","hero.feature.whatsapp":"WhatsApp click-to-chat","hero.feature.mobile":"Mobile-friendly site","hero.feature.social":"Social media setup" }[key] ?? key),
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 
@@ -20,7 +26,7 @@ describe("HeroSection", () => {
   it("renders the description paragraph", () => {
     render(<HeroSection />);
     expect(screen.getByText(/If your website is outdated or your social media went quiet/)).toBeInTheDocument();
-    expect(screen.getByText(/From 1,250 EGP a month/)).toBeInTheDocument();
+    expect(screen.getByText((c) => c.includes("1,250 EGP"))).toBeInTheDocument();
   });
 
   it("renders feature badges", () => {
@@ -34,7 +40,7 @@ describe("HeroSection", () => {
     const login = screen.getByText("Login");
     expect(login.closest("a")).toHaveAttribute("href", "/login");
 
-    const cta = screen.getByText("ابدأ دلوقتي");
+    const cta = screen.getByText("Start Now");
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });
 

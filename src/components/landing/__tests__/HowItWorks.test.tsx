@@ -4,6 +4,12 @@ import { HowItWorks } from "../HowItWorks";
 
 vi.mock("@/hooks/useScrollReveal", () => ({ useScrollReveal: () => ({ ref: { current: null }, visible: true }) }));
 vi.mock("@/components/ui/GeometricPattern", () => ({ GeometricPattern: () => <div data-testid="geo-pattern" /> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en", setLocale: vi.fn(), dir: "ltr",
+    t: (key: string) => ({ "section.how-it-works.label":"How It Works","section.how-it-works.heading":"Three steps to a real online presence.","section.how-it-works.step1.title":"We scan your business","section.how-it-works.step1.desc":"Enter your website URL. Our audit checks 10 categories","section.how-it-works.step2.title":"You get your score","section.how-it-works.step2.desc":"A clear 0-100 Digital Presence Score","section.how-it-works.step3.title":"We build what you need","section.how-it-works.step3.desc":"Pick a plan. We set up your website" }[key] ?? key),
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 

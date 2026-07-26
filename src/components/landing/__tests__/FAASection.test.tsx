@@ -5,6 +5,30 @@ import { FAASection } from "../FAASection";
 vi.mock("@/components/ui/ScrollReveal", () => ({
   RevealSection: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div>,
 }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en",
+    setLocale: vi.fn(),
+    dir: "ltr",
+    t: (key: string) => {
+      const dict: Record<string, string> = {
+        "section.faq.label": "FAQ",
+        "section.faq.heading": "Common questions.",
+        "section.faq.q1": "Do I need technical skills to use Wujood?",
+        "section.faq.a1": "No. We set everything up for you. You just tell us what you need and we handle the rest.",
+        "section.faq.q2": "Can I cancel anytime?",
+        "section.faq.a2": "Yes. No contracts, no early termination fees. You keep what we built.",
+        "section.faq.q3": "What if I already have a website?",
+        "section.faq.a3": "We can work with your existing site or build a new one. Start with a free audit to see where you stand.",
+        "section.faq.q4": "Do you work with businesses outside Cairo?",
+        "section.faq.a4": "We work with Egyptian businesses everywhere. Our entire platform is remote.",
+        "section.faq.q5": "Is support available in Arabic?",
+        "section.faq.a5": "Yes. Our team speaks Arabic and English. Support is included in every plan.",
+      };
+      return dict[key] ?? key;
+    },
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 

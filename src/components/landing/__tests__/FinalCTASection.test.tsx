@@ -4,6 +4,20 @@ import { FinalCTASection } from "../FinalCTASection";
 
 vi.mock("@/components/ui/ScrollReveal", () => ({ RevealSection: ({ children }: { children: React.ReactNode }) => <div data-testid="reveal">{children}</div> }));
 vi.mock("@/components/audit/AuditForm", () => ({ AuditForm: () => <div data-testid="audit-form" /> }));
+vi.mock("@/lib/i18n", () => ({
+  useLocale: () => ({
+    locale: "en",
+    setLocale: vi.fn(),
+    dir: "ltr",
+    t: (key: string) => {
+      const dict: Record<string, string> = {
+        "section.cta.heading": "See where your business stands.",
+        "section.cta.subtext": "Enter your website URL. Get a free Digital Presence Score and a full breakdown of what is missing. It takes 30 seconds.",
+      };
+      return dict[key] ?? key;
+    },
+  }),
+}));
 
 afterEach(() => vi.clearAllMocks());
 
