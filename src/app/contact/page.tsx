@@ -3,6 +3,8 @@
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Navigation } from "@/components/navigation/Navigation";
 
+export const dynamic = "force-dynamic";
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-bg-primary">
