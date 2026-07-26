@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
 
 export async function listReviewsController() {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const reviews = await prisma.review.findMany({
-      where: { userId: user.userId },
+      where: { userId: auth.userId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ reviews });
@@ -21,9 +19,8 @@ export async function listReviewsController() {
 
 export async function createReviewController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { authorName, content, rating, source } = await req.json();
     if (!authorName || !content || !rating) {
@@ -31,7 +28,7 @@ export async function createReviewController(req: NextRequest) {
     }
 
     const review = await prisma.review.create({
-      data: { userId: user.userId, authorName, content, rating, source },
+      data: { userId: auth.userId, authorName, content, rating, source },
     });
     return NextResponse.json({ review });
   } catch {
@@ -41,12 +38,11 @@ export async function createReviewController(req: NextRequest) {
 
 export async function updateReviewController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const existing = await prisma.review.findFirst({ where: { id, userId: user.userId } });
+    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const { authorName, content, rating, source, isApproved } = await req.json();
@@ -68,12 +64,11 @@ export async function updateReviewController(req: NextRequest, { params }: { par
 
 export async function deleteReviewController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const existing = await prisma.review.findFirst({ where: { id, userId: user.userId } });
+    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     await prisma.review.delete({ where: { id } });

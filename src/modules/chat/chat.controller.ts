@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
 import { generateChatResponse } from "./chat.service";
 
 export async function listConversationsController() {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId: user.userId },
+      where: { userId: auth.userId },
       include: { contact: { select: { name: true, phone: true } } },
       orderBy: { updatedAt: "desc" },
     });
@@ -23,13 +21,12 @@ export async function listConversationsController() {
 
 export async function getConversationController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
     const conversation = await prisma.conversation.findFirst({
-      where: { id, userId: user.userId },
+      where: { id, userId: auth.userId },
       include: { contact: { select: { name: true, phone: true, email: true } } },
     });
     if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -42,9 +39,8 @@ export async function getConversationController(_req: NextRequest, { params }: {
 
 export async function sendMessageController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { conversationId, message } = await req.json();
     if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -52,7 +48,7 @@ export async function sendMessageController(req: NextRequest) {
     let conversation;
     if (conversationId) {
       conversation = await prisma.conversation.findFirst({
-        where: { id: conversationId, userId: user.userId },
+        where: { id: conversationId, userId: auth.userId },
       });
       if (!conversation) return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
@@ -69,7 +65,7 @@ export async function sendMessageController(req: NextRequest) {
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
-          userId: user.userId,
+          userId: auth.userId,
           messages: finalMessages,
           status: "active",
         },
@@ -89,12 +85,11 @@ export async function sendMessageController(req: NextRequest) {
 
 export async function deleteConversationController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const existing = await prisma.conversation.findFirst({ where: { id, userId: user.userId } });
+    const existing = await prisma.conversation.findFirst({ where: { id, userId: auth.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     await prisma.conversation.delete({ where: { id } });

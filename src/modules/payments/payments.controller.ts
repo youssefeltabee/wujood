@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
 import crypto from "crypto";
 
 const FAWRY_MERCHANT_CODE = process.env.FAWRY_MERCHANT_CODE || "";
@@ -24,26 +23,25 @@ function verifyFawryCallbackSignature(
 
 export async function createFawryCheckoutController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { catalogItemId, quantity = 1 } = await req.json();
     if (!catalogItemId) return NextResponse.json({ error: "catalogItemId is required" }, { status: 400 });
 
     const item = await prisma.catalogItem.findFirst({
-      where: { id: catalogItemId, userId: user.userId, isActive: true },
+      where: { id: catalogItemId, userId: auth.userId, isActive: true },
     });
     if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
     const amount = Number(item.priceEgp) * quantity;
     if (!amount || amount <= 0) return NextResponse.json({ error: "Invalid price" }, { status: 400 });
 
-    const merchantRefNum = `wujood-${user.userId}-${Date.now()}`;
+    const merchantRefNum = `wujood-${auth.userId}-${Date.now()}`;
 
     const payment = await prisma.payment.create({
       data: {
-        userId: user.userId,
+        userId: auth.userId,
         amount,
         currency: "EGP",
         status: "pending",
@@ -67,9 +65,9 @@ export async function createFawryCheckoutController(req: NextRequest) {
     const body = {
       merchantCode: FAWRY_MERCHANT_CODE,
       merchantRefNum,
-      customerName: user.email,
+      customerName: auth.email,
       customerMobile: "",
-      customerEmail: user.email,
+      customerEmail: auth.email,
       amount: amount.toFixed(2),
       currencyCode: "EGP",
       description: item.name,

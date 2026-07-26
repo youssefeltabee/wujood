@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
+import { encrypt } from "@/lib/encryption";
 
 export async function listAccountsController() {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const accounts = await prisma.socialAccount.findMany({
-      where: { userId: user.userId },
+      where: { userId: auth.userId },
       orderBy: { platform: "asc" },
       select: { id: true, platform: true, handle: true },
     });
@@ -23,9 +22,8 @@ export async function listAccountsController() {
 
 export async function createAccountController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { platform, handle, token: socialToken } = await req.json();
     if (!platform) {
@@ -33,14 +31,16 @@ export async function createAccountController(req: NextRequest) {
     }
 
     const existing = await prisma.socialAccount.findUnique({
-      where: { userId_platform: { userId: user.userId, platform } },
+      where: { userId_platform: { userId: auth.userId, platform } },
     });
     if (existing) {
       return NextResponse.json({ error: "Account already connected" }, { status: 409 });
     }
 
+    const encryptedToken = socialToken ? encrypt(socialToken) : null;
+
     const account = await prisma.socialAccount.create({
-      data: { userId: user.userId, platform, handle, token: socialToken },
+      data: { userId: auth.userId, platform, handle, token: encryptedToken },
     });
 
     return NextResponse.json({ account }, { status: 201 });
@@ -51,12 +51,11 @@ export async function createAccountController(req: NextRequest) {
 
 export async function deleteAccountController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const account = await prisma.socialAccount.findFirst({ where: { id, userId: user.userId } });
+    const account = await prisma.socialAccount.findFirst({ where: { id, userId: auth.userId } });
     if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
 
     await prisma.socialAccount.delete({ where: { id } });
@@ -68,16 +67,15 @@ export async function deleteAccountController(_req: NextRequest, { params }: { p
 
 export async function listPostsController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const accountId = searchParams.get("accountId");
 
     const where: Record<string, unknown> = {
-      account: { userId: user.userId },
+      account: { userId: auth.userId },
     };
     if (status) where.status = status;
     if (accountId) where.accountId = accountId;
@@ -96,16 +94,15 @@ export async function listPostsController(req: NextRequest) {
 
 export async function createPostController(req: NextRequest) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { accountId, content, mediaUrls, scheduledAt } = await req.json();
     if (!accountId || !content) {
       return NextResponse.json({ error: "accountId and content required" }, { status: 400 });
     }
 
-    const account = await prisma.socialAccount.findFirst({ where: { id: accountId, userId: user.userId } });
+    const account = await prisma.socialAccount.findFirst({ where: { id: accountId, userId: auth.userId } });
     if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
 
     const scheduled = scheduledAt ? new Date(scheduledAt) : null;
@@ -124,13 +121,12 @@ export async function createPostController(req: NextRequest) {
 
 export async function deletePostController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
     const post = await prisma.socialPost.findFirst({
-      where: { id, account: { userId: user.userId } },
+      where: { id, account: { userId: auth.userId } },
     });
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
 
@@ -143,13 +139,12 @@ export async function deletePostController(_req: NextRequest, { params }: { para
 
 export async function getAnalyticsController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
     const post = await prisma.socialPost.findFirst({
-      where: { id, account: { userId: user.userId } },
+      where: { id, account: { userId: auth.userId } },
     });
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
 
