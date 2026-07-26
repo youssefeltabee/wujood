@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+env:
+  VERCEL_ORG_ID: team_MaNCSboVWwrZ4crnocUbYi6F
+  VERCEL_PROJECT_ID: prj_xDzpQfVIKNGHDDrcHJf2QCGbaaV8
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,9 +19,6 @@ jobs:
           cache: npm
       - run: npm install
       - run: npx prisma generate
-      # Schema is pushed via the Supabase pooler (DATABASE_URL, IPv4) which
-      # GitHub-hosted runners can reach. This step is best-effort: it logs the
-      # outcome so a real failure is never masked as the expected skip.
       - name: Push database schema (best-effort)
         id: db-push
         continue-on-error: true
@@ -29,26 +30,10 @@ jobs:
         if: always()
         run: |
           case "${{ steps.db-push.outcome }}" in
-            success)
-              echo "Schema push succeeded"
-              ;;
-            skipped)
-              echo "::error::Schema push was skipped unexpectedly (DB schema may be out of sync). This should not happen now that push runs via the Supabase pooler (IPv4). Investigate the runner/job configuration."
-              ;;
-            failure|cancelled)
-              echo "::error::Schema push ${{ steps.db-push.outcome }} — this is NOT the expected IPv6 skip. Check DATABASE_URL/DIRECT_URL and Supabase connectivity."
-              ;;
-            *)
-              echo "Schema push outcome unknown: ${{ steps.db-push.outcome }}"
-              ;;
+            success) echo "Schema push succeeded" ;;
+            failure|cancelled) echo "::error::Schema push ${{ steps.db-push.outcome }} — check Supabase connectivity." ;;
+            *) echo "Schema push outcome: ${{ steps.db-push.outcome }}" ;;
           esac
-      - name: Ensure env vars in Vercel project via CLI
-        run: |
-          npx vercel link --project wujood --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1
-          echo "${{ secrets.DATABASE_URL }}" | npx vercel env add DATABASE_URL production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DATABASE_URL skipped"
-          echo "${{ secrets.DIRECT_URL }}" | npx vercel env add DIRECT_URL production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ DIRECT_URL skipped"
-          echo "${{ secrets.JWT_SECRET }}" | npx vercel env add JWT_SECRET production --force --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1 || echo "→ JWT_SECRET skipped"
       - run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-
