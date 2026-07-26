@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, DM_Sans } from "next/font/google";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LocaleProvider } from "@/lib/i18n";
+import { RTLProvider } from "@/components/RTLProvider";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -26,10 +27,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="auto" className="dark h-full">
+    <html lang="ar" dir="rtl" className="dark h-full">
       <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
         <LocaleProvider>
-          <SmoothScroll>{children}</SmoothScroll>
+          <RTLProvider>
+            <SmoothScroll>{children}</SmoothScroll>
+          </RTLProvider>
         </LocaleProvider>
       </body>
     </html>

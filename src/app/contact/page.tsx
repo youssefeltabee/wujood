@@ -1,3 +1,5 @@
+"use client";
+
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Navigation } from "@/components/navigation/Navigation";
 
