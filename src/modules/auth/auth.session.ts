@@ -27,10 +27,13 @@ export async function rotateRefreshToken(
   });
   if (result.count === 0) return null;
 
-  const existing = await prisma.refreshToken.findUnique({ where: { token: oldToken } });
+  const existing = await prisma.refreshToken.findUnique({
+    where: { token: oldToken },
+    include: { user: { select: { email: true } } },
+  });
   if (!existing) return null;
 
-  const accessToken = signAccessToken({ userId: existing.userId, email: existing.userId });
+  const accessToken = signAccessToken({ userId: existing.userId, email: existing.user.email });
   const refreshToken = generateRefreshToken();
 
   await prisma.refreshToken.create({

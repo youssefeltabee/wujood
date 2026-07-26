@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
 import { scanUrl } from "./audit.scanner";
 import { computeScore } from "./audit.scorer";
 
 export async function createAuditController(req: NextRequest) {
   try {
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
+
     const { url } = await req.json();
     if (!url) {
       return NextResponse.json({ error: "URL required" }, { status: 400 });
     }
-
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
 
     const scan = await scanUrl(url);
     const score = computeScore(scan);
 
     const audit = await prisma.audit.create({
       data: {
-        userId: user?.userId || null,
+        userId: auth.userId,
         url,
         totalScore: score.totalScore,
         mobileScore: scan.mobileScore, speedScore: scan.speedScore,
@@ -41,15 +39,11 @@ export async function createAuditController(req: NextRequest) {
 
 export async function listAuditsController() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const audits = await prisma.audit.findMany({
-      where: { userId: user.userId, deletedAt: null },
+      where: { userId: auth.userId, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 20,
       select: { id: true, url: true, totalScore: true, createdAt: true },
@@ -66,16 +60,12 @@ export async function listAuditsController() {
 
 export async function getAuditController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
     const audit = await prisma.audit.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, userId: auth.userId, deletedAt: null },
       select: {
         id: true, url: true, totalScore: true, createdAt: true,
         mobileScore: true, speedScore: true, seoScore: true,
@@ -99,8 +89,13 @@ export async function getAuditController(_req: NextRequest, { params }: { params
 
 export async function pdfAuditController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await authenticateUser();
+    if (auth instanceof NextResponse) return auth;
+
     const { id } = await params;
-    const audit = await prisma.audit.findUnique({ where: { id } });
+    const audit = await prisma.audit.findFirst({
+      where: { id, userId: auth.userId, deletedAt: null },
+    });
     if (!audit) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const score = computeScore({
