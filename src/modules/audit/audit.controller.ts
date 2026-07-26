@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError, NotFoundError, ValidationError } from "@/lib/errors";
+import { validateBody, idSchema } from "@/lib/validate";
+import { jsonOk, jsonCreated, jsonPaginated } from "@/utils/api";
 import { scanUrl } from "./audit.scanner";
 import { computeScore } from "./audit.scorer";
+
+const createAuditSchema = z.object({
+  url: z.string().url("Must be a valid URL"),
+});
 
 export async function createAuditController(req: NextRequest) {
   try {
     const auth = await authenticateUser();
     if (auth instanceof NextResponse) return auth;
 
-    const { url } = await req.json();
-    if (!url) {
-      return NextResponse.json({ error: "URL required" }, { status: 400 });
-    }
+    const result = await validateBody(req, createAuditSchema);
+    if ("error" in result) return handleApiError(result.error);
+    const { url } = result.data;
 
     const scan = await scanUrl(url);
     const score = computeScore(scan);
@@ -31,30 +38,38 @@ export async function createAuditController(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ audit: { id: audit.id, ...score, url } });
-  } catch {
-    return NextResponse.json({ error: "Audit failed" }, { status: 500 });
+    return jsonCreated(
+      { audit: { id: audit.id, ...score, url } },
+      "Audit created successfully",
+    );
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
-export async function listAuditsController() {
+export async function listAuditsController(req: NextRequest) {
   try {
     const auth = await authenticateUser();
     if (auth instanceof NextResponse) return auth;
 
-    const audits = await prisma.audit.findMany({
-      where: { userId: auth.userId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      select: { id: true, url: true, totalScore: true, createdAt: true },
-    });
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "20", 10)));
 
-    return NextResponse.json(
-      { audits },
-      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
-    );
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch audits" }, { status: 500 });
+    const [audits, total] = await Promise.all([
+      prisma.audit.findMany({
+        where: { userId: auth.userId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: { id: true, url: true, totalScore: true, createdAt: true },
+      }),
+      prisma.audit.count({ where: { userId: auth.userId, deletedAt: null } }),
+    ]);
+
+    return jsonPaginated(audits, total, page, pageSize);
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -64,6 +79,10 @@ export async function getAuditController(_req: NextRequest, { params }: { params
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+    if (!idSchema.safeParse(id).success) {
+      throw new ValidationError("Invalid audit ID");
+    }
+
     const audit = await prisma.audit.findFirst({
       where: { id, userId: auth.userId, deletedAt: null },
       select: {
@@ -75,15 +94,14 @@ export async function getAuditController(_req: NextRequest, { params }: { params
     });
 
     if (!audit) {
-      return NextResponse.json({ error: "Audit not found" }, { status: 404 });
+      throw new NotFoundError("Audit");
     }
 
-    return NextResponse.json(
-      { audit },
-      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } }
-    );
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch audit" }, { status: 500 });
+    const response = jsonOk({ audit });
+    response.headers.set("Cache-Control", "private, max-age=60, stale-while-revalidate=120");
+    return response;
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -93,10 +111,14 @@ export async function pdfAuditController(req: NextRequest, { params }: { params:
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+    if (!idSchema.safeParse(id).success) {
+      throw new ValidationError("Invalid audit ID");
+    }
+
     const audit = await prisma.audit.findFirst({
       where: { id, userId: auth.userId, deletedAt: null },
     });
-    if (!audit) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!audit) throw new NotFoundError("Audit");
 
     const score = computeScore({
       mobileScore: audit.mobileScore, speedScore: audit.speedScore,
@@ -115,7 +137,7 @@ export async function pdfAuditController(req: NextRequest, { params }: { params:
         "Content-Disposition": `attachment; filename="ghost-audit-${audit.id}.pdf"`,
       },
     });
-  } catch {
-    return NextResponse.json({ error: "PDF generation failed" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

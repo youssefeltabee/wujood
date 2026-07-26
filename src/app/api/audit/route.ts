@@ -5,6 +5,6 @@ export async function POST(req: NextRequest) {
   return createAuditController(req);
 }
 
-export async function GET() {
-  return listAuditsController();
+export async function GET(req: NextRequest) {
+  return listAuditsController(req);
 }
