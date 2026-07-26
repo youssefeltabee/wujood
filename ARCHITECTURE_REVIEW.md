@@ -56,7 +56,7 @@ if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 | `social.controller.ts` | 8-10, 25-27, 52-54, 70-72, 97-99, 126-128, 145-147 | Repeated 7 times | HIGH |
 | `payments.controller.ts` | 26-28 | Once | MEDIUM |
 | `blog/route.ts` | 8-10, 25-27 | Repeated 2 times inline | HIGH |
-| `subscriptions/route.ts` | 6-11, 14-15 | Helper function exists but used inconsistently | MEDIUM |
+| `subscriptions/route.ts` | 6-11, 14-15 | ✅ **FIXED** — now uses `authenticateUser()` from `src/lib/auth.ts` | RESOLVED |
 | `admin/stats/route.ts` | 7-12 | Inline again | MEDIUM |
 
 **Recommendation**: Create a single `authenticateUser()` helper in `src/lib/auth.ts` that returns the user or throws/returns a 401 response. Also consider using Next.js middleware for route-level auth, but the middleware already handles dashboard routes — API routes need their own solution.
@@ -121,7 +121,7 @@ if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 | File | Line | Issue | Severity |
 |------|------|-------|----------|
-| `subscriptions/route.ts` | 48 | Valid tier list contains `"mutamayiz"` but site config only defines `"kashif"`, `"sane"`, `"raed"` | HIGH |
+| `subscriptions/route.ts` | 48 | ✅ **FIXED** — tier now pulled from `siteConfig.tiers` dynamically; `mutamayiz` replaced with `sane` | RESOLVED |
 | `subscriptions/route.ts` | 67 | Fallback price `999` doesn't match any tier in site config | HIGH |
 | `dashboard/layout.tsx` | 11-14 | Admin check fires a fetch to `/api/auth/me` on every dashboard page load | MEDIUM |
 | `audit.scanner.ts` | 137-138 | `AbortSignal.timeout(10000)` — 10-second timeout for an external fetch that holds the entire request | MEDIUM |
@@ -199,7 +199,7 @@ if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 | 4 | Add Prisma `$transaction` wrapper to payment callback | 30 min | Prevents orphaned subscription records |
 | 5 | Remove or guard `debug/db` route behind admin check | 10 min | Stops leaking infrastructure info |
 | 6 | Create `blog.controller.ts` and `subscriptions.controller.ts` to follow the module pattern | 1 hour | Codebase consistency |
-| 7 | Fix `"mutamayiz"` → `"sane"` in subscriptions route to match site config | 5 min | Bug fix — correct tier name |
+| 7 | ✅ **FIXED** — `"mutamayiz"` → `"sane"` in subscriptions route + frontend with dynamic tier config | DONE |
 | 8 | Add structured `console.error` with context to every catch block | 1 hour | Vastly improved debuggability |
 
 ---

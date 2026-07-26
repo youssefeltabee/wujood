@@ -16,12 +16,14 @@ interface SubscriptionData {
 
 const tierLabels: Record<string, string> = {
   kashif: "Kashif",
-  mutamayiz: "Mutamayiz",
+  sane: "Sane'",
+  raed: "Ra'ed",
 };
 
 const tierBadgeVariant: Record<string, "gold" | "info" | "default"> = {
   kashif: "gold",
-  mutamayiz: "info",
+  sane: "info",
+  raed: "default",
 };
 
 const statusBadgeVariant: Record<string, "success" | "danger" | "warning"> = {
@@ -74,12 +76,12 @@ export default function SubscriptionPage() {
     const res = await fetch("/api/subscriptions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "change-tier", tier: "mutamayiz" }),
+      body: JSON.stringify({ action: "change-tier", tier: "sane" }),
     });
     setActionLoading(false);
     setUpgradeOpen(false);
     if (res.ok) {
-      toast("Upgraded to Mutamayiz", "success");
+      toast("Upgraded to Sane'", "success");
       await fetchSubscription();
     } else {
       const err = await res.json();
@@ -155,9 +157,9 @@ export default function SubscriptionPage() {
 
               {subscription.status === "active" && (
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {subscription.tier !== "mutamayiz" && (
+                  {subscription.tier !== "raed" && (
                     <Button variant="primary" onClick={() => setUpgradeOpen(true)}>
-                      Upgrade to Mutamayiz
+                      Upgrade to Ra'ed
                     </Button>
                   )}
                   <Button variant="danger" onClick={() => setCancelOpen(true)}>
@@ -182,9 +184,9 @@ export default function SubscriptionPage() {
         </div>
       </Modal>
 
-      <Modal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} title="Upgrade to Mutamayiz" size="sm">
+      <Modal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} title="Upgrade to Ra'ed" size="sm">
         <p className="text-text-secondary text-sm mb-6">
-          Upgrade to Mutamayiz for EGP 999/month and unlock all premium features. Your current plan will be canceled.
+          Upgrade to Ra'ed for EGP 4,500/month and unlock all premium features. Your current plan will be canceled.
         </p>
         <div className="flex gap-3 justify-end">
           <Button variant="secondary" onClick={() => setUpgradeOpen(false)}>Not Now</Button>

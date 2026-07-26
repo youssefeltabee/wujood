@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { authenticateUser } from "@/lib/auth";
+import { siteConfig } from "@/config/site";
 
-async function getUser(req: NextRequest) {
-  const token = (await cookies()).get("token")?.value;
-  const user = token ? verifyAccessToken(token) : null;
-  if (!user) return null;
-  return user;
-}
+const VALID_TIERS = siteConfig.tiers.map(t => t.id);
 
 export async function GET(req: NextRequest) {
-  const user = await getUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await authenticateUser();
+  if (auth instanceof NextResponse) return auth;
+  const user = auth;
 
   const subscription = await prisma.subscription.findFirst({
     where: { userId: user.userId },
@@ -23,8 +20,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await authenticateUser();
+  if (auth instanceof NextResponse) return auth;
+  const user = auth;
 
   const body = await req.json();
   const { action } = body;
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "change-tier") {
     const { tier } = body;
-    if (!tier || !["kashif", "mutamayiz"].includes(tier)) {
+    if (!tier || !VALID_TIERS.includes(tier)) {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
     }
 
@@ -60,11 +58,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const tierConfig = siteConfig.tiers.find(t => t.id === tier);
+    const priceEgp = tierConfig?.price ?? 0;
+
     const newSub = await prisma.subscription.create({
       data: {
         userId: user.userId,
         tier,
-        priceEgp: tier === "mutamayiz" ? 999 : 0,
+        priceEgp,
         expiresAt: new Date(Date.now() + 30 * 86400000),
       },
     });

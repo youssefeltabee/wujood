@@ -1,24 +1,28 @@
+"use client";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
-
-const quickLinks = [
-  { label: "Home", href: "/" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "FAQ", href: "#faq" },
-];
+import { useLocale } from "@/lib/i18n";
 
 export function FooterSection() {
+  const { t } = useLocale();
+
+  const quickLinks = [
+    { label: t("footer.home"), href: "/" },
+    { label: t("footer.pricing"), href: "#pricing" },
+    { label: t("footer.how-it-works"), href: "#how-it-works" },
+    { label: t("footer.faq"), href: "#faq" },
+  ];
+
   return (
     <footer className="border-t border-accent-gold/20 py-14 px-6 bg-bg-primary">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-2">
             <Logo />
-            <p className="text-sm text-text-muted mt-4 leading-relaxed max-w-sm">Website builder, WhatsApp CRM, social media management, and AI chatbot for Egyptian SMEs. From 1,250 EGP a month.</p>
+            <p className="text-sm text-text-muted mt-4 leading-relaxed max-w-sm">{t("footer.tagline")}</p>
           </div>
           <div>
-            <h4 className="text-xs font-semibold text-text-primary mb-5 uppercase tracking-widest">Quick Links</h4>
+            <h4 className="text-xs font-semibold text-text-primary mb-5 uppercase tracking-widest">{t("footer.quick-links")}</h4>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.label}>
@@ -28,7 +32,7 @@ export function FooterSection() {
             </ul>
           </div>
           <div>
-            <h4 className="text-xs font-semibold text-text-primary mb-5 uppercase tracking-widest">Contact</h4>
+            <h4 className="text-xs font-semibold text-text-primary mb-5 uppercase tracking-widest">{t("footer.contact")}</h4>
             <ul className="space-y-3 text-sm text-text-muted">
               <li>youssefeltabee@gmail.com</li>
               <li>Cairo, Egypt</li>
@@ -36,11 +40,17 @@ export function FooterSection() {
             </ul>
           </div>
         </div>
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-xs text-text-muted">
+          <span className="bg-bg-elevated px-3 py-1.5 rounded-lg border border-border-subtle">سجل تجاري</span>
+          <span className="bg-bg-elevated px-3 py-1.5 rounded-lg border border-border-subtle">Visa</span>
+          <span className="bg-bg-elevated px-3 py-1.5 rounded-lg border border-border-subtle">Meeza</span>
+          <span className="bg-bg-elevated px-3 py-1.5 rounded-lg border border-border-subtle">Fawry</span>
+        </div>
         <div className="border-t border-border-subtle pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-text-muted">&copy; {new Date().getFullYear()} Wujood.</p>
           <div className="flex gap-6 text-xs text-text-muted">
-            <span className="hover:text-accent-gold transition-colors cursor-default">Privacy</span>
-            <span className="hover:text-accent-gold transition-colors cursor-default">Terms</span>
+            <span className="hover:text-accent-gold transition-colors cursor-default">{t("footer.privacy")}</span>
+            <span className="hover:text-accent-gold transition-colors cursor-default">{t("footer.terms")}</span>
           </div>
         </div>
       </div>

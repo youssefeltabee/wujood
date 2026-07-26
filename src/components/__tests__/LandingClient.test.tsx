@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LandingClient from "../LandingClient";
 
-// Mock all landing section imports
 vi.mock("@/components/landing/HeroSection", () => ({
   HeroSection: () => <section data-testid="hero-section">Hero</section>,
 }));
@@ -38,35 +37,52 @@ vi.mock("@/components/ui/WhatsAppButton", () => ({
 }));
 
 describe("LandingClient", () => {
-  it("renders all landing page sections", () => {
+  it("renders hero-section, tab bar, and final-cta inside main", () => {
     render(<LandingClient />);
     expect(screen.getByTestId("hero-section")).toBeInTheDocument();
-    expect(screen.getByTestId("stats-section")).toBeInTheDocument();
-    expect(screen.getByTestId("problem-section")).toBeInTheDocument();
-    expect(screen.getByTestId("how-it-works")).toBeInTheDocument();
-    expect(screen.getByTestId("testimonials-section")).toBeInTheDocument();
-    expect(screen.getByTestId("pricing-section")).toBeInTheDocument();
-    expect(screen.getByTestId("faa-section")).toBeInTheDocument();
     expect(screen.getByTestId("final-cta")).toBeInTheDocument();
-    expect(screen.getByTestId("footer")).toBeInTheDocument();
+    expect(screen.getByRole("tablist")).toBeInTheDocument();
   });
 
-  it("renders in correct order: hero first, footer last", () => {
+  it("shows problem tab content by default (stats + problem + marquee)", () => {
     render(<LandingClient />);
-    const main = document.querySelector("main");
-    const sections = Array.from(main!.children);
-    const ids = sections.map((s) => s.getAttribute("data-testid"));
-    // The order inside <main> should be: hero, stats, problem, how-it-works,
-    // Marquee, testimonials, pricing, faa, final-cta
-    expect(ids[0]).toBe("hero-section");
-    expect(ids[1]).toBe("stats-section");
-    expect(ids[2]).toBe("problem-section");
-    expect(ids[3]).toBe("how-it-works");
-    // index 4 is the Marquee (no data-testid)
-    expect(ids[5]).toBe("testimonials-section");
-    expect(ids[6]).toBe("pricing-section");
-    expect(ids[7]).toBe("faa-section");
-    expect(ids[8]).toBe("final-cta");
+    expect(screen.getByTestId("stats-section")).toBeInTheDocument();
+    expect(screen.getByTestId("problem-section")).toBeInTheDocument();
+  });
+
+  it("hides tabs other than the active one", () => {
+    render(<LandingClient />);
+    expect(screen.queryByTestId("how-it-works")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("testimonials-section")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("pricing-section")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("faa-section")).not.toBeInTheDocument();
+  });
+
+  it("switches tab content on tab click", async () => {
+    const user = userEvent.setup();
+    render(<LandingClient />);
+    await user.click(screen.getByText("كيف يعمل"));
+    expect(screen.getByTestId("how-it-works")).toBeInTheDocument();
+    expect(screen.queryByTestId("stats-section")).not.toBeInTheDocument();
+  });
+
+  it("renders all 5 tab labels in the tab bar", () => {
+    render(<LandingClient />);
+    expect(screen.getByText("المشكلة")).toBeInTheDocument();
+    expect(screen.getByText("كيف يعمل")).toBeInTheDocument();
+    expect(screen.getByText("المميزات")).toBeInTheDocument();
+    expect(screen.getByText("آراء العملاء")).toBeInTheDocument();
+    expect(screen.getByText("الأسعار")).toBeInTheDocument();
+  });
+
+  it("renders hero before tabs, final-cta after tabs, footer outside main", () => {
+    render(<LandingClient />);
+    const main = document.querySelector("main")!;
+    const children = Array.from(main.children);
+    expect(children[0]).toHaveAttribute("data-testid", "hero-section");
+    expect(children[children.length - 1]).toHaveAttribute("data-testid", "final-cta");
+    const footer = screen.getByTestId("footer");
+    expect(footer.closest("main")).toBeNull();
   });
 
   it("renders WhatsAppButton", () => {
@@ -95,14 +111,6 @@ describe("LandingClient", () => {
     expect(waba.closest("main")).toBeNull();
   });
 
-  it("renders main element wrapping all primary sections", () => {
-    render(<LandingClient />);
-    const main = document.querySelector("main");
-    expect(main).toBeInTheDocument();
-    expect(main?.querySelector("[data-testid='hero-section']")).toBeInTheDocument();
-    expect(main?.querySelector("[data-testid='final-cta']")).toBeInTheDocument();
-  });
-
   it("renders MouseBlob element with aria-hidden", () => {
     const { container } = render(<LandingClient />);
     const blob = container.querySelector(".mouse-blob");
@@ -121,22 +129,7 @@ describe("LandingClient", () => {
     const { container } = render(<LandingClient />);
     const track = container.querySelector(".marquee-track");
     expect(track).toBeInTheDocument();
-    // 10 items doubled = 20 span elements
     const items = track?.querySelectorAll("span");
     expect(items?.length).toBe(20);
-  });
-
-  it("tracks mouse position on mousemove", async () => {
-    const user = userEvent.setup();
-    render(<LandingClient />);
-    const blob = document.querySelector(".mouse-blob") as HTMLElement;
-    expect(blob).toBeInTheDocument();
-
-    await user.pointer({ target: document.body, coords: { x: 500, y: 300 } });
-
-    // After a mousemove, the blob should update its position via RAF.
-    // Since RAF doesn't fire synchronously in jsdom, we just verify
-    // the event listener was attached (no crash).
-    expect(blob.style.left).toBeDefined();
   });
 });

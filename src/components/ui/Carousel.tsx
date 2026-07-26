@@ -32,6 +32,12 @@ export function Carousel({
   const [paused, setPaused] = useState(false);
   const reduced = usePrefersReducedMotion();
 
+  useEffect(() => {
+    const onVis = () => setPaused(document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
   const goTo = useCallback(
     (index: number) => {
       const track = trackRef.current;

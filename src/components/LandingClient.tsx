@@ -10,6 +10,8 @@ import { FAASection } from "@/components/landing/FAASection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { FooterSection } from "@/components/landing/FooterSection";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { TabbedLayout } from "@/components/ui/Tabs";
+import { useLocale } from "@/lib/i18n";
 
 function Marquee() {
   const items = ["محلات", "مطاعم", "ورش", "عيادات", "مدارس", "شركات", "متاجر", "مكاتب", "معامل", "صيدليات"];
@@ -50,19 +52,38 @@ function MouseBlob() {
 }
 
 export default function LandingClient() {
+  const { t } = useLocale();
+  const tabs = [
+    { value: "problem", label: t("tab.problem") },
+    { value: "how-it-works", label: t("tab.how-it-works") },
+    { value: "features", label: t("tab.features") },
+    { value: "testimonials", label: t("tab.testimonials") },
+    { value: "pricing", label: t("tab.pricing") },
+  ];
+
   return (
     <>
       <MouseBlob />
       <WhatsAppButton />
       <main>
         <HeroSection />
-        <StatsSection />
-        <ProblemSection />
-        <HowItWorks />
-        <Marquee />
-        <TestimonialsSection />
-        <PricingSection />
-        <FAASection />
+        <TabbedLayout tabs={tabs} defaultTab="problem" variant="underline" className="max-w-6xl mx-auto px-6">
+          {(activeTab) => (
+            <>
+              {activeTab === "problem" && (
+                <>
+                  <StatsSection />
+                  <ProblemSection />
+                  <Marquee />
+                </>
+              )}
+              {activeTab === "how-it-works" && <HowItWorks />}
+              {activeTab === "features" && <FAASection />}
+              {activeTab === "testimonials" && <TestimonialsSection />}
+              {activeTab === "pricing" && <PricingSection />}
+            </>
+          )}
+        </TabbedLayout>
         <FinalCTASection />
       </main>
       <FooterSection />
