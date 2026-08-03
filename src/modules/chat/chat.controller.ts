@@ -5,11 +5,10 @@ import { generateChatResponse } from "./chat.service";
 
 export async function listConversationsController() {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId: auth.userId },
+      where: { userId: user.userId },
       include: { contact: { select: { name: true, phone: true } } },
       orderBy: { updatedAt: "desc" },
     });
@@ -21,12 +20,11 @@ export async function listConversationsController() {
 
 export async function getConversationController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
     const conversation = await prisma.conversation.findFirst({
-      where: { id, userId: auth.userId },
+      where: { id, userId: user.userId },
       include: { contact: { select: { name: true, phone: true, email: true } } },
     });
     if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,8 +37,7 @@ export async function getConversationController(_req: NextRequest, { params }: {
 
 export async function sendMessageController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { conversationId, message } = await req.json();
     if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -48,7 +45,7 @@ export async function sendMessageController(req: NextRequest) {
     let conversation;
     if (conversationId) {
       conversation = await prisma.conversation.findFirst({
-        where: { id: conversationId, userId: auth.userId },
+        where: { id: conversationId, userId: user.userId },
       });
       if (!conversation) return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
@@ -65,7 +62,7 @@ export async function sendMessageController(req: NextRequest) {
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
-          userId: auth.userId,
+          userId: user.userId,
           messages: finalMessages,
           status: "active",
         },
@@ -85,11 +82,10 @@ export async function sendMessageController(req: NextRequest) {
 
 export async function deleteConversationController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
-    const existing = await prisma.conversation.findFirst({ where: { id, userId: auth.userId } });
+    const existing = await prisma.conversation.findFirst({ where: { id, userId: user.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     await prisma.conversation.delete({ where: { id } });

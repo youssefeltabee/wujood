@@ -23,25 +23,24 @@ function verifyFawryCallbackSignature(
 
 export async function createFawryCheckoutController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { catalogItemId, quantity = 1 } = await req.json();
     if (!catalogItemId) return NextResponse.json({ error: "catalogItemId is required" }, { status: 400 });
 
     const item = await prisma.catalogItem.findFirst({
-      where: { id: catalogItemId, userId: auth.userId, isActive: true },
+      where: { id: catalogItemId, userId: user.userId, isActive: true },
     });
     if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
     const amount = Number(item.priceEgp) * quantity;
     if (!amount || amount <= 0) return NextResponse.json({ error: "Invalid price" }, { status: 400 });
 
-    const merchantRefNum = `wujood-${auth.userId}-${Date.now()}`;
+    const merchantRefNum = `wujood-${user.userId}-${Date.now()}`;
 
     const payment = await prisma.payment.create({
       data: {
-        userId: auth.userId,
+        userId: user.userId,
         amount,
         currency: "EGP",
         status: "pending",
@@ -65,9 +64,9 @@ export async function createFawryCheckoutController(req: NextRequest) {
     const body = {
       merchantCode: FAWRY_MERCHANT_CODE,
       merchantRefNum,
-      customerName: auth.email,
+      customerName: user.email,
       customerMobile: "",
-      customerEmail: auth.email,
+      customerEmail: user.email,
       amount: amount.toFixed(2),
       currencyCode: "EGP",
       description: item.name,

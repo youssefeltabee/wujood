@@ -14,8 +14,7 @@ const createAuditSchema = z.object({
 
 export async function createAuditController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const result = await validateBody(req, createAuditSchema);
     if ("error" in result) return handleApiError(result.error);
@@ -26,7 +25,7 @@ export async function createAuditController(req: NextRequest) {
 
     const audit = await prisma.audit.create({
       data: {
-        userId: auth.userId,
+        userId: user.userId,
         url,
         totalScore: score.totalScore,
         mobileScore: scan.mobileScore, speedScore: scan.speedScore,
@@ -49,8 +48,7 @@ export async function createAuditController(req: NextRequest) {
 
 export async function listAuditsController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
@@ -58,13 +56,13 @@ export async function listAuditsController(req: NextRequest) {
 
     const [audits, total] = await Promise.all([
       prisma.audit.findMany({
-        where: { userId: auth.userId, deletedAt: null },
+        where: { userId: user.userId, deletedAt: null },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
         select: { id: true, url: true, totalScore: true, createdAt: true },
       }),
-      prisma.audit.count({ where: { userId: auth.userId, deletedAt: null } }),
+      prisma.audit.count({ where: { userId: user.userId, deletedAt: null } }),
     ]);
 
     return jsonPaginated(audits, total, page, pageSize);
@@ -75,8 +73,7 @@ export async function listAuditsController(req: NextRequest) {
 
 export async function getAuditController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
     if (!idSchema.safeParse(id).success) {
@@ -84,7 +81,7 @@ export async function getAuditController(_req: NextRequest, { params }: { params
     }
 
     const audit = await prisma.audit.findFirst({
-      where: { id, userId: auth.userId, deletedAt: null },
+      where: { id, userId: user.userId, deletedAt: null },
       select: {
         id: true, url: true, totalScore: true, createdAt: true,
         mobileScore: true, speedScore: true, seoScore: true,
@@ -107,8 +104,7 @@ export async function getAuditController(_req: NextRequest, { params }: { params
 
 export async function pdfAuditController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
     if (!idSchema.safeParse(id).success) {
@@ -116,7 +112,7 @@ export async function pdfAuditController(req: NextRequest, { params }: { params:
     }
 
     const audit = await prisma.audit.findFirst({
-      where: { id, userId: auth.userId, deletedAt: null },
+      where: { id, userId: user.userId, deletedAt: null },
     });
     if (!audit) throw new NotFoundError("Audit");
 

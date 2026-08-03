@@ -4,11 +4,10 @@ import { authenticateUser } from "@/lib/auth";
 
 export async function listReviewsController() {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const reviews = await prisma.review.findMany({
-      where: { userId: auth.userId },
+      where: { userId: user.userId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ reviews });
@@ -19,8 +18,7 @@ export async function listReviewsController() {
 
 export async function createReviewController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { authorName, content, rating, source } = await req.json();
     if (!authorName || !content || !rating) {
@@ -28,7 +26,7 @@ export async function createReviewController(req: NextRequest) {
     }
 
     const review = await prisma.review.create({
-      data: { userId: auth.userId, authorName, content, rating, source },
+      data: { userId: user.userId, authorName, content, rating, source },
     });
     return NextResponse.json({ review });
   } catch {
@@ -38,11 +36,10 @@ export async function createReviewController(req: NextRequest) {
 
 export async function updateReviewController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
-    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
+    const existing = await prisma.review.findFirst({ where: { id, userId: user.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const { authorName, content, rating, source, isApproved } = await req.json();
@@ -64,11 +61,10 @@ export async function updateReviewController(req: NextRequest, { params }: { par
 
 export async function deleteReviewController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
+    const user = await authenticateUser();
 
     const { id } = await params;
-    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
+    const existing = await prisma.review.findFirst({ where: { id, userId: user.userId } });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     await prisma.review.delete({ where: { id } });

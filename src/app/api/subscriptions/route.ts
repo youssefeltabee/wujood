@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
 import { siteConfig } from "@/config/site";
 
 const VALID_TIERS = siteConfig.tiers.map(t => t.id);
 
-export async function GET(req: NextRequest) {
-  const auth = await authenticateUser();
-  if (auth instanceof NextResponse) return auth;
-  const user = auth;
+export async function GET(_req: NextRequest) {
+  const user = await authenticateUser();
 
   const subscription = await prisma.subscription.findFirst({
     where: { userId: user.userId },
@@ -20,9 +17,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await authenticateUser();
-  if (auth instanceof NextResponse) return auth;
-  const user = auth;
+  const user = await authenticateUser();
 
   const body = await req.json();
   const { action } = body;
