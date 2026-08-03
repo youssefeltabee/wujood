@@ -13,7 +13,6 @@ export interface PdfGenerationJob {
   type: "pdf-generation";
   payload: {
     auditId: string;
-    userId: string;
   };
 }
 

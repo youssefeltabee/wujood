@@ -3,6 +3,7 @@ import { Receiver } from "@upstash/qstash";
 import { prisma } from "@/lib/db";
 import { scanUrl } from "@/modules/audit/audit.scanner";
 import { computeScore } from "@/modules/audit/audit.scorer";
+import { enqueueJob } from "@/lib/queue";
 
 const receiver = new Receiver({
   currentSigningKey: process.env.QSTASH_SIGNING_KEY!,
@@ -48,6 +49,8 @@ export async function POST(req: Request) {
         rawData: scan.rawData as any,
       },
     });
+
+    await enqueueJob("pdf-generation", { auditId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     await prisma.audit.update({
