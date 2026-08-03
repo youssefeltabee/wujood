@@ -39,4 +39,10 @@ export function jsonPaginated<T>(
   return NextResponse.json(body, { status: 200 });
 }
 
+export function jsonAccepted<T>(data: T, message?: string): NextResponse<ApiSuccess<T>> {
+  const body: ApiSuccess<T> = { success: true, data };
+  if (message) body.message = message;
+  return NextResponse.json(body, { status: 202 });
+}
+
 export const jsonSuccess = jsonOk;
