@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Cairo, DM_Sans } from "next/font/google";
+import { Cairo, DM_Sans, Geist } from "next/font/google";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LocaleProvider } from "@/lib/i18n";
 import { RTLProvider } from "@/components/RTLProvider";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -28,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className="dark h-full">
+    <html lang="ar" dir="rtl" className={cn("dark h-full", "font-sans", geist.variable)}>
       <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
         <LocaleProvider>
           <RTLProvider>

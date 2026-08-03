@@ -21,3 +21,14 @@ export { Tooltip } from "./Tooltip";
 export type { TooltipProps, TooltipPosition } from "./Tooltip";
 export { Spinner } from "./Spinner";
 export type { SpinnerProps } from "./Spinner";
+
+// shadcn/ui components
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger } from "./dialog";
+export { Toaster } from "./sonner";
+export { Input as ShadcnInput } from "./shadcn-input";
+export { Badge as ShadcnBadge, badgeVariants as shadcnBadgeVariants } from "./shadcn-badge";
+export { Card as ShadcnCard, CardHeader as ShadcnCardHeader, CardFooter as ShadcnCardFooter, CardTitle as ShadcnCardTitle, CardDescription as ShadcnCardDescription, CardContent as ShadcnCardContent } from "./shadcn-card";
+export { ShadcnTabs, ShadcnTabsList, ShadcnTabsTrigger, ShadcnTabsContent } from "./shadcn-tabs";
+export { ShadcnTooltip, ShadcnTooltipTrigger, ShadcnTooltipContent, ShadcnTooltipProvider } from "./shadcn-tooltip";
+export { Skeleton as ShadcnSkeleton } from "./shadcn-skeleton";
+export { ShadcnSelect, ShadcnSelectContent, ShadcnSelectItem, ShadcnSelectLabel, ShadcnSelectSeparator, ShadcnSelectTrigger } from "./shadcn-select";
