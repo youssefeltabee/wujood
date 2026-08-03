@@ -1,6 +1,6 @@
 import { lookup as dnsLookup } from "dns/promises";
 import { MemoryCache } from "@/lib/cache";
-import { isPrivateIP } from "@/lib/utils";
+import { validateUrl, isPrivateIP } from "@/lib/url-validation";
 
 export interface ScanResult {
   mobileScore: number;
@@ -140,16 +140,14 @@ export async function scanUrl(url: string): Promise<ScanResult> {
 
   domainTimestamps.set(domain, Date.now());
 
-  const urlObj = new URL(fullUrl);
-
-  if (!["http:", "https:"].includes(urlObj.protocol)) {
-    return errorResult("Invalid protocol");
+  let urlObj: URL;
+  try {
+    urlObj = validateUrl(fullUrl);
+  } catch {
+    return errorResult("Invalid or private URL");
   }
 
   const hostname = urlObj.hostname;
-  if (hostname === "localhost" || hostname === "0.0.0.0" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname) && isPrivateIP(hostname)) {
-    return errorResult("Invalid URL");
-  }
 
   try {
     const addresses = await dnsLookup(hostname, { all: true });
