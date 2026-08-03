@@ -8,7 +8,7 @@ import { rateLimit } from "@/lib/rate-limit";
 
 export async function loginController(req: Request) {
   const ip = req.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const rl = rateLimit(`login:${ip}`, { interval: 60000, maxRequests: 5 });
+  const rl = await rateLimit(`login:${ip}`, { interval: 60000, maxRequests: 5 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }

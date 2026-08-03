@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
-import { handleApiError, NotFoundError, ValidationError } from "@/lib/errors";
+import { handleApiError, NotFoundError, ValidationError, RateLimitError } from "@/lib/errors";
 import { validateBody, idSchema } from "@/lib/validate";
 import { jsonOk, jsonCreated, jsonPaginated } from "@/utils/api";
 import { scanUrl } from "./audit.scanner";
 import { computeScore } from "./audit.scorer";
+import { rateLimit } from "@/lib/rate-limit";
 
 const createAuditSchema = z.object({
   url: z.string().url("Must be a valid URL"),
@@ -15,6 +16,9 @@ const createAuditSchema = z.object({
 export async function createAuditController(req: NextRequest) {
   try {
     const user = await authenticateUser();
+
+    const { success } = await rateLimit(`audit:${user.userId}`, 10);
+    if (!success) throw new RateLimitError("Too many audit requests. Try again later.");
 
     const result = await validateBody(req, createAuditSchema);
     if ("error" in result) return handleApiError(result.error);
