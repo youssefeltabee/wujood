@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 
 export async function listReviewsController() {
   try {
@@ -11,8 +12,8 @@ export async function listReviewsController() {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ reviews });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -29,8 +30,8 @@ export async function createReviewController(req: NextRequest) {
       data: { userId: user.userId, authorName, content, rating, source },
     });
     return NextResponse.json({ review });
-  } catch {
-    return NextResponse.json({ error: "Failed to create review" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -54,8 +55,8 @@ export async function updateReviewController(req: NextRequest, { params }: { par
       },
     });
     return NextResponse.json({ review });
-  } catch {
-    return NextResponse.json({ error: "Failed to update review" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -69,8 +70,8 @@ export async function deleteReviewController(_req: NextRequest, { params }: { pa
 
     await prisma.review.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -86,7 +87,7 @@ export async function publicReviewsController(req: NextRequest) {
       select: { authorName: true, content: true, rating: true, source: true, createdAt: true },
     });
     return NextResponse.json({ reviews });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

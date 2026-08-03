@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 import { generateChatResponse } from "./chat.service";
 
 export async function listConversationsController() {
@@ -13,8 +14,8 @@ export async function listConversationsController() {
       orderBy: { updatedAt: "desc" },
     });
     return NextResponse.json({ conversations });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -30,8 +31,8 @@ export async function getConversationController(_req: NextRequest, { params }: {
     if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     return NextResponse.json({ conversation });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch conversation" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -75,8 +76,8 @@ export async function sendMessageController(req: NextRequest) {
     }
 
     return NextResponse.json({ conversation, aiMessage: aiResponse });
-  } catch {
-    return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -90,7 +91,7 @@ export async function deleteConversationController(_req: NextRequest, { params }
 
     await prisma.conversation.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete conversation" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

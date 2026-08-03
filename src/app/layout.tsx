@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     default: "Wujood | Your Business, Online. In EGP. In Arabic.",
   },
   description: "Website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs. All in EGP, all in Arabic.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

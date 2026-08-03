@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -12,8 +13,8 @@ export async function GET() {
     });
 
     return NextResponse.json({ posts });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ post }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

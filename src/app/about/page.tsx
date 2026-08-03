@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { Navigation } from "@/components/navigation/Navigation";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "We help Egyptian businesses build trust and grow online through automated audits, social proof, and actionable insights.",
+};
 
 export default function AboutPage() {
   return (

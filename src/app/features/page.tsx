@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FAASection } from "@/components/landing/FAASection";
 import { Navigation } from "@/components/navigation/Navigation";
+
+export const metadata: Metadata = {
+  title: "Features",
+  description: "Everything you need to build trust online — website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs.",
+};
 
 export default function FeaturesPage() {
   return (

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
-import { ForbiddenError } from "@/lib/errors";
+import { ForbiddenError, handleApiError } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -25,7 +25,7 @@ export async function GET() {
       activeSubscriptions,
       totalAudits,
     });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

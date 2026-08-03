@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 import crypto from "crypto";
 
 const FAWRY_MERCHANT_CODE = process.env.FAWRY_MERCHANT_CODE || "";
@@ -87,8 +88,8 @@ export async function createFawryCheckoutController(req: NextRequest) {
       fawryResponse: fawryData,
       checkoutUrl: fawryData?.paymentURL || null,
     });
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -154,7 +155,7 @@ export async function fawryCallbackController(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Callback processing failed" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

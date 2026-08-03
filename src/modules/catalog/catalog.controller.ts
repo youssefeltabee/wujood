@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 
 export async function listItemsController(req: NextRequest) {
   try {
@@ -14,8 +15,8 @@ export async function listItemsController(req: NextRequest) {
 
     const items = await prisma.catalogItem.findMany({ where, orderBy: { createdAt: "desc" } });
     return NextResponse.json({ items });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch items" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -36,8 +37,8 @@ export async function createItemController(req: NextRequest) {
       },
     });
     return NextResponse.json({ item });
-  } catch {
-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -62,8 +63,8 @@ export async function updateItemController(req: NextRequest, { params }: { param
       },
     });
     return NextResponse.json({ item });
-  } catch {
-    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -77,7 +78,7 @@ export async function deleteItemController(_req: NextRequest, { params }: { para
 
     await prisma.catalogItem.update({ where: { id }, data: { isActive: false } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

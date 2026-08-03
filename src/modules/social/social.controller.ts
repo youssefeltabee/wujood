@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 import { encrypt } from "@/lib/encryption";
 
 export async function listAccountsController() {
@@ -14,8 +15,8 @@ export async function listAccountsController() {
     });
 
     return NextResponse.json({ accounts });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -42,8 +43,8 @@ export async function createAccountController(req: NextRequest) {
     });
 
     return NextResponse.json({ account }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -57,8 +58,8 @@ export async function deleteAccountController(_req: NextRequest, { params }: { p
 
     await prisma.socialAccount.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -83,8 +84,8 @@ export async function listPostsController(req: NextRequest) {
     });
 
     return NextResponse.json({ posts });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -109,8 +110,8 @@ export async function createPostController(req: NextRequest) {
     });
 
     return NextResponse.json({ post }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -126,8 +127,8 @@ export async function deletePostController(_req: NextRequest, { params }: { para
 
     await prisma.socialPost.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -143,7 +144,7 @@ export async function getAnalyticsController(_req: NextRequest, { params }: { pa
 
     const analytics = await prisma.socialAnalytics.findUnique({ where: { postId: id } });
     return NextResponse.json({ analytics: analytics || { likes: 0, shares: 0, comments: 0, clicks: 0, reach: 0 } });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch analytics" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
