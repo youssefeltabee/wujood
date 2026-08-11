@@ -1,156 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
 import { encrypt } from "@/lib/encryption";
+import * as socialService from "./social.service";
 
 export async function listAccountsController() {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
-    const accounts = await prisma.socialAccount.findMany({
-      where: { userId: auth.userId },
-      orderBy: { platform: "asc" },
-      select: { id: true, platform: true, handle: true },
-    });
-
+    const user = await authenticateUser();
+    const accounts = await socialService.getSocialAccounts(user.userId);
     return NextResponse.json({ accounts });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function createAccountController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { platform, handle, token: socialToken } = await req.json();
     if (!platform) {
       return NextResponse.json({ error: "Platform required" }, { status: 400 });
     }
-
-    const existing = await prisma.socialAccount.findUnique({
-      where: { userId_platform: { userId: auth.userId, platform } },
-    });
-    if (existing) {
-      return NextResponse.json({ error: "Account already connected" }, { status: 409 });
-    }
-
-    const encryptedToken = socialToken ? encrypt(socialToken) : null;
-
-    const account = await prisma.socialAccount.create({
-      data: { userId: auth.userId, platform, handle, token: encryptedToken },
-    });
-
+    const encryptedToken = socialToken ? encrypt(socialToken) : undefined;
+    const account = await socialService.connectSocialAccount(user.userId, { platform, handle, token: encryptedToken });
     return NextResponse.json({ account }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function deleteAccountController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { id } = await params;
-    const account = await prisma.socialAccount.findFirst({ where: { id, userId: auth.userId } });
-    if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
-
-    await prisma.socialAccount.delete({ where: { id } });
+    await socialService.disconnectSocialAccount(id, user.userId);
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function listPostsController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status");
-    const accountId = searchParams.get("accountId");
-
-    const where: Record<string, unknown> = {
-      account: { userId: auth.userId },
-    };
-    if (status) where.status = status;
-    if (accountId) where.accountId = accountId;
-
-    const posts = await prisma.socialPost.findMany({
-      where: where as any,
-      include: { account: { select: { platform: true, handle: true } }, analytics: true },
-      orderBy: { scheduledAt: "desc" },
-    });
-
+    const status = searchParams.get("status") || undefined;
+    const accountId = searchParams.get("accountId") || undefined;
+    const posts = await socialService.getSocialPosts(user.userId, { status, accountId });
     return NextResponse.json({ posts });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function createPostController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { accountId, content, mediaUrls, scheduledAt } = await req.json();
     if (!accountId || !content) {
       return NextResponse.json({ error: "accountId and content required" }, { status: 400 });
     }
-
-    const account = await prisma.socialAccount.findFirst({ where: { id: accountId, userId: auth.userId } });
-    if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
-
-    const scheduled = scheduledAt ? new Date(scheduledAt) : null;
-    const status = scheduled && scheduled > new Date() ? "scheduled" : "draft";
-
-    const post = await prisma.socialPost.create({
-      data: { accountId, content, mediaUrls: mediaUrls || [], scheduledAt: scheduled, status },
-      include: { account: { select: { platform: true, handle: true } } },
-    });
-
+    const post = await socialService.createSocialPost(user.userId, { accountId, content, mediaUrls, scheduledAt });
     return NextResponse.json({ post }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function deletePostController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { id } = await params;
-    const post = await prisma.socialPost.findFirst({
-      where: { id, account: { userId: auth.userId } },
-    });
-    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-
-    await prisma.socialPost.delete({ where: { id } });
+    await socialService.deleteSocialPost(id, user.userId);
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function getAnalyticsController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { id } = await params;
-    const post = await prisma.socialPost.findFirst({
-      where: { id, account: { userId: auth.userId } },
-    });
-    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-
-    const analytics = await prisma.socialAnalytics.findUnique({ where: { postId: id } });
-    return NextResponse.json({ analytics: analytics || { likes: 0, shares: 0, comments: 0, clicks: 0, reach: 0 } });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch analytics" }, { status: 500 });
+    const analytics = await socialService.getPostAnalytics(id, user.userId);
+    return NextResponse.json({ analytics });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
+import { handleApiError } from "@/lib/errors";
+import * as paymentsService from "./payments.service";
 import crypto from "crypto";
 
 const FAWRY_MERCHANT_CODE = process.env.FAWRY_MERCHANT_CODE || "";
@@ -23,32 +24,21 @@ function verifyFawryCallbackSignature(
 
 export async function createFawryCheckoutController(req: NextRequest) {
   try {
-    const auth = await authenticateUser();
-    if (auth instanceof NextResponse) return auth;
-
+    const user = await authenticateUser();
     const { catalogItemId, quantity = 1 } = await req.json();
     if (!catalogItemId) return NextResponse.json({ error: "catalogItemId is required" }, { status: 400 });
 
-    const item = await prisma.catalogItem.findFirst({
-      where: { id: catalogItemId, userId: auth.userId, isActive: true },
-    });
-    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
-
+    const item = await paymentsService.getCatalogItemForPayment(catalogItemId, user.userId);
     const amount = Number(item.priceEgp) * quantity;
     if (!amount || amount <= 0) return NextResponse.json({ error: "Invalid price" }, { status: 400 });
 
-    const merchantRefNum = `wujood-${auth.userId}-${Date.now()}`;
-
-    const payment = await prisma.payment.create({
-      data: {
-        userId: auth.userId,
-        amount,
-        currency: "EGP",
-        status: "pending",
-        provider: "fawry",
-        providerRefNum: merchantRefNum,
-        metadata: { catalogItemId, quantity, itemName: item.name },
-      },
+    const merchantRefNum = `wujood-${user.userId}-${Date.now()}`;
+    const payment = await paymentsService.createPayment(user.userId, {
+      amount,
+      currency: "EGP",
+      provider: "fawry",
+      providerRefNum: merchantRefNum,
+      metadata: { catalogItemId, quantity, itemName: item.name },
     });
 
     if (!FAWRY_MERCHANT_CODE || !FAWRY_SECURITY_KEY) {
@@ -61,13 +51,12 @@ export async function createFawryCheckoutController(req: NextRequest) {
     }
 
     const signature = generateFawrySignature(merchantRefNum, FAWRY_MERCHANT_CODE, amount, FAWRY_SECURITY_KEY);
-
     const body = {
       merchantCode: FAWRY_MERCHANT_CODE,
       merchantRefNum,
-      customerName: auth.email,
+      customerName: user.email,
       customerMobile: "",
-      customerEmail: auth.email,
+      customerEmail: user.email,
       amount: amount.toFixed(2),
       currencyCode: "EGP",
       description: item.name,
@@ -80,7 +69,6 @@ export async function createFawryCheckoutController(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-
     const fawryData = await fawryRes.json();
 
     return NextResponse.json({
@@ -88,8 +76,8 @@ export async function createFawryCheckoutController(req: NextRequest) {
       fawryResponse: fawryData,
       checkoutUrl: fawryData?.paymentURL || null,
     });
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -105,57 +93,19 @@ export async function fawryCallbackController(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const payment = await prisma.payment.findFirst({
-      where: { providerRefNum: merchantRefCode },
-    });
+    const payment = await paymentsService.findPaymentByRef(merchantRefCode);
     if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    if (payment.status === "completed") return NextResponse.json({ success: true });
 
-    if (payment.status === "completed") {
-      return NextResponse.json({ success: true });
+    const isPaid = paymentStatus === "PAID" || paymentStatus === "SUCCESS";
+    if (isPaid) {
+      await paymentsService.completePayment(payment.id, rest);
+    } else {
+      await paymentsService.failPayment(payment.id, rest);
     }
 
-    const status = paymentStatus === "PAID" || paymentStatus === "SUCCESS" ? "completed" : "failed";
-
-    await prisma.$transaction(async (tx) => {
-      if (status === "completed") {
-        const existingSub = await tx.subscription.findFirst({
-          where: { userId: payment.userId, status: "active" },
-        });
-
-        if (existingSub) {
-          const interval = (existingSub.interval === "yearly") ? 365 : 30;
-          const updatedSub = await tx.subscription.update({
-            where: { id: existingSub.id },
-            data: { expiresAt: new Date(Date.now() + interval * 86400000) },
-          });
-          await tx.payment.update({
-            where: { id: payment.id },
-            data: { status, subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
-          });
-        } else {
-          const newSub = await tx.subscription.create({
-            data: {
-              userId: payment.userId,
-              tier: "kashif",
-              priceEgp: 0,
-              expiresAt: new Date(Date.now() + 30 * 86400000),
-            },
-          });
-          await tx.payment.update({
-            where: { id: payment.id },
-            data: { status, subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
-          });
-        }
-      } else {
-        await tx.payment.update({
-          where: { id: payment.id },
-          data: { status, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
-        });
-      }
-    });
-
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Callback processing failed" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

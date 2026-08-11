@@ -13,9 +13,17 @@ function StepCard({ item, index, t }: { item: typeof howItWorks[0]; index: numbe
   const { ref, visible } = useScrollReveal<HTMLDivElement>(0.2);
   return (
     <div ref={ref} className={`step-card transition-all duration-700 ${visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
-      <div className="flex items-start gap-5">
-        <div className="step-number text-6xl font-bold text-accent-gold/20 leading-none shrink-0 w-16 text-right">{item.step}</div>
-        <div className="border-l-2 border-accent-gold/20 pl-5">
+      <div className="flex items-start gap-5 relative">
+        {/* Step number with glow */}
+        <div className="relative shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
+            <span className="text-2xl font-bold text-accent-gold">{item.step}</span>
+          </div>
+          {index < howItWorks.length - 1 && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 w-px h-10 bg-gradient-to-b from-accent-gold/30 to-transparent" />
+          )}
+        </div>
+        <div className="pt-2">
           <h3 className="text-xl font-bold text-text-primary mb-2">{t(item.titleKey)}</h3>
           <p className="text-text-secondary leading-relaxed text-sm">{t(item.descKey)}</p>
         </div>

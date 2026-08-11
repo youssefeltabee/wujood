@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import DashboardClientWrapper from "../DashboardClientWrapper";
 
 describe("DashboardClientWrapper", () => {
-  it("renders children inside the ToastProvider", () => {
+  it("renders children", () => {
     render(
       <DashboardClientWrapper>
         <span data-testid="child">Dashboard Content</span>
@@ -36,7 +36,7 @@ describe("DashboardClientWrapper", () => {
     expect(screen.getByTestId("article").tagName).toBe("ARTICLE");
   });
 
-  it("wraps children in a ToastProvider context", () => {
+  it("passes through children", () => {
     function TestConsumer() {
       // Can't use useToast here directly because it would render React elements
       // Just verify the wrapper renders children

@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Navigation } from "@/components/navigation/Navigation";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description: "Simple, transparent pricing for Egyptian SMEs. All plans include a 14-day free trial.",
+};
 
 export default function PricingPage() {
   return (

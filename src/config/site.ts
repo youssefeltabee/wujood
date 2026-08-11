@@ -3,7 +3,7 @@ export const siteConfig = {
   nameAr: "وجود",
   tagline: "Your Business, Online. In EGP. In Arabic.",
   description: "Wujood gives Egyptian SMEs the tools to actually show up online. A website, WhatsApp Business tools, social media management, and an AI chatbot. All in EGP, all in Arabic.",
-  url: "https://wujood.app",
+  url: "https://wujood.vercel.app",
   locale: "ar-EG",
 
   tiers: [

@@ -1,0 +1,840 @@
+diff --git a/src/modules/catalog/catalog.controller.ts b/src/modules/catalog/catalog.controller.ts
+index 809de58..0196146 100644
+--- a/src/modules/catalog/catalog.controller.ts
++++ b/src/modules/catalog/catalog.controller.ts
+@@ -1,87 +1,51 @@
+ import { NextRequest, NextResponse } from "next/server";
+-import { prisma } from "@/lib/db";
+ import { authenticateUser } from "@/lib/auth";
++import { handleApiError } from "@/lib/errors";
++import * as catalogService from "./catalog.service";
+ 
+ export async function listItemsController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { searchParams } = new URL(req.url);
+-    const category = searchParams.get("category");
+-
+-    const where: Record<string, unknown> = { userId: auth.userId };
+-    if (category) where.category = category;
+-
+-    const items = await prisma.catalogItem.findMany({ where, orderBy: { createdAt: "desc" } });
++    const category = searchParams.get("category") || undefined;
++    const items = await catalogService.getCatalogItems(user.userId, category);
+     return NextResponse.json({ items });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch items" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function createItemController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { name, description, priceEgp, category } = await req.json();
+     if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+-
+-    const item = await prisma.catalogItem.create({
+-      data: {
+-        userId: auth.userId,
+-        name,
+-        description,
+-        priceEgp: priceEgp !== undefined && priceEgp !== null ? Number(priceEgp) : null,
+-        category,
+-      },
+-    });
++    const item = await catalogService.createCatalogItem(user.userId, { name, description, priceEgp, category });
+     return NextResponse.json({ item });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function updateItemController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const existing = await prisma.catalogItem.findFirst({ where: { id, userId: auth.userId } });
+-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+-
+     const { name, description, priceEgp, category, imageUrl, isActive } = await req.json();
+-    const item = await prisma.catalogItem.update({
+-      where: { id },
+-      data: {
+-        ...(name !== undefined && { name }),
+-        ...(description !== undefined && { description }),
+-        ...(priceEgp !== undefined && { priceEgp: Number(priceEgp) }),
+-        ...(category !== undefined && { category }),
+-        ...(imageUrl !== undefined && { imageUrl }),
+-        ...(isActive !== undefined && { isActive }),
+-      },
+-    });
++    const item = await catalogService.updateCatalogItem(id, user.userId, { name, description, priceEgp, category, imageUrl, isActive });
+     return NextResponse.json({ item });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function deleteItemController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const existing = await prisma.catalogItem.findFirst({ where: { id, userId: auth.userId } });
+-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+-
+-    await prisma.catalogItem.update({ where: { id }, data: { isActive: false } });
++    await catalogService.softDeleteCatalogItem(id, user.userId);
+     return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+diff --git a/src/modules/catalog/catalog.service.ts b/src/modules/catalog/catalog.service.ts
+new file mode 100644
+index 0000000..70d744c
+--- /dev/null
++++ b/src/modules/catalog/catalog.service.ts
+@@ -0,0 +1,30 @@
++import { prisma } from "@/lib/db";
++import { NotFoundError } from "@/lib/errors";
++
++export async function getCatalogItems(userId: string, category?: string) {
++  const where: Record<string, unknown> = { userId };
++  if (category) where.category = category;
++  return prisma.catalogItem.findMany({ where, orderBy: { createdAt: "desc" } });
++}
++
++export async function getCatalogItem(id: string, userId: string) {
++  const item = await prisma.catalogItem.findFirst({ where: { id, userId } });
++  if (!item) throw new NotFoundError("Catalog item");
++  return item;
++}
++
++export async function createCatalogItem(userId: string, data: { name: string; description?: string; priceEgp?: number; category?: string }) {
++  return prisma.catalogItem.create({ data: { ...data, userId } });
++}
++
++export async function updateCatalogItem(id: string, userId: string, data: { name?: string; description?: string; priceEgp?: number; category?: string; imageUrl?: string; isActive?: boolean }) {
++  const item = await prisma.catalogItem.findFirst({ where: { id, userId } });
++  if (!item) throw new NotFoundError("Catalog item");
++  return prisma.catalogItem.update({ where: { id }, data });
++}
++
++export async function softDeleteCatalogItem(id: string, userId: string) {
++  const item = await prisma.catalogItem.findFirst({ where: { id, userId } });
++  if (!item) throw new NotFoundError("Catalog item");
++  return prisma.catalogItem.update({ where: { id }, data: { isActive: false } });
++}
+diff --git a/src/modules/payments/payments.controller.ts b/src/modules/payments/payments.controller.ts
+index 080d614..36ee3a3 100644
+--- a/src/modules/payments/payments.controller.ts
++++ b/src/modules/payments/payments.controller.ts
+@@ -1,13 +1,14 @@
+ import { NextRequest, NextResponse } from "next/server";
+-import { prisma } from "@/lib/db";
+ import { authenticateUser } from "@/lib/auth";
++import { handleApiError } from "@/lib/errors";
++import * as paymentsService from "./payments.service";
+ import crypto from "crypto";
+ 
+ const FAWRY_MERCHANT_CODE = process.env.FAWRY_MERCHANT_CODE || "";
+ const FAWRY_SECURITY_KEY = process.env.FAWRY_SECURITY_KEY || "";
+ const FAWRY_BASE_URL = process.env.FAWRY_BASE_URL || "https://atfawry.fawrypay.com/api";
+ 
+ function generateFawrySignature(merchantRefNum: string, merchantCode: string, amount: number, securityKey: string) {
+   const data = `${merchantRefNum}${merchantCode}${amount.toFixed(2)}${securityKey}`;
+   return crypto.createHash("sha256").update(data).digest("hex");
+ }
+@@ -16,146 +17,95 @@ function verifyFawryCallbackSignature(
+   merchantRefCode: string, paymentStatus: string, signature: string, securityKey: string, merchantCode: string,
+ ) {
+   const data = `${merchantRefCode}${paymentStatus}${merchantCode}${securityKey}`;
+   const expected = crypto.createHash("sha256").update(data).digest("hex");
+   if (signature.length !== expected.length) return false;
+   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+ }
+ 
+ export async function createFawryCheckoutController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { catalogItemId, quantity = 1 } = await req.json();
+     if (!catalogItemId) return NextResponse.json({ error: "catalogItemId is required" }, { status: 400 });
+ 
+-    const item = await prisma.catalogItem.findFirst({
+-      where: { id: catalogItemId, userId: auth.userId, isActive: true },
+-    });
+-    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+-
++    const item = await paymentsService.getCatalogItemForPayment(catalogItemId, user.userId);
+     const amount = Number(item.priceEgp) * quantity;
+     if (!amount || amount <= 0) return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+ 
+-    const merchantRefNum = `wujood-${auth.userId}-${Date.now()}`;
+-
+-    const payment = await prisma.payment.create({
+-      data: {
+-        userId: auth.userId,
+-        amount,
+-        currency: "EGP",
+-        status: "pending",
+-        provider: "fawry",
+-        providerRefNum: merchantRefNum,
+-        metadata: { catalogItemId, quantity, itemName: item.name },
+-      },
++    const merchantRefNum = `wujood-${user.userId}-${Date.now()}`;
++    const payment = await paymentsService.createPayment(user.userId, {
++      amount,
++      currency: "EGP",
++      provider: "fawry",
++      providerRefNum: merchantRefNum,
++      metadata: { catalogItemId, quantity, itemName: item.name },
+     });
+ 
+     if (!FAWRY_MERCHANT_CODE || !FAWRY_SECURITY_KEY) {
+       return NextResponse.json({
+         payment,
+         checkoutUrl: null,
+         mockMode: true,
+         message: "Fawry not configured. Payment recorded as pending.",
+       });
+     }
+ 
+     const signature = generateFawrySignature(merchantRefNum, FAWRY_MERCHANT_CODE, amount, FAWRY_SECURITY_KEY);
+-
+     const body = {
+       merchantCode: FAWRY_MERCHANT_CODE,
+       merchantRefNum,
+-      customerName: auth.email,
++      customerName: user.email,
+       customerMobile: "",
+-      customerEmail: auth.email,
++      customerEmail: user.email,
+       amount: amount.toFixed(2),
+       currencyCode: "EGP",
+       description: item.name,
+       signature,
+       chargeItems: [{ itemId: item.id, description: item.name, price: Number(item.priceEgp).toFixed(2), quantity }],
+     };
+ 
+     const fawryRes = await fetch(`${FAWRY_BASE_URL}/ECommerceWeb/Fawry/payments/charge`, {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify(body),
+     });
+-
+     const fawryData = await fawryRes.json();
+ 
+     return NextResponse.json({
+       payment,
+       fawryResponse: fawryData,
+       checkoutUrl: fawryData?.paymentURL || null,
+     });
+-  } catch (e) {
+-    return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function fawryCallbackController(req: NextRequest) {
+   try {
+     const body = await req.json();
+     const { merchantRefCode, paymentStatus, signature, ...rest } = body;
+ 
+     if (!FAWRY_SECURITY_KEY || !FAWRY_MERCHANT_CODE) {
+       return NextResponse.json({ error: "Fawry not configured" }, { status: 500 });
+     }
+     if (!signature || !verifyFawryCallbackSignature(merchantRefCode, paymentStatus, signature, FAWRY_SECURITY_KEY, FAWRY_MERCHANT_CODE)) {
+       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+     }
+ 
+-    const payment = await prisma.payment.findFirst({
+-      where: { providerRefNum: merchantRefCode },
+-    });
++    const payment = await paymentsService.findPaymentByRef(merchantRefCode);
+     if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
++    if (payment.status === "completed") return NextResponse.json({ success: true });
+ 
+-    if (payment.status === "completed") {
+-      return NextResponse.json({ success: true });
++    const isPaid = paymentStatus === "PAID" || paymentStatus === "SUCCESS";
++    if (isPaid) {
++      await paymentsService.completePayment(payment.id, rest);
++    } else {
++      await paymentsService.failPayment(payment.id, rest);
+     }
+ 
+-    const status = paymentStatus === "PAID" || paymentStatus === "SUCCESS" ? "completed" : "failed";
+-
+-    await prisma.$transaction(async (tx) => {
+-      if (status === "completed") {
+-        const existingSub = await tx.subscription.findFirst({
+-          where: { userId: payment.userId, status: "active" },
+-        });
+-
+-        if (existingSub) {
+-          const interval = (existingSub.interval === "yearly") ? 365 : 30;
+-          const updatedSub = await tx.subscription.update({
+-            where: { id: existingSub.id },
+-            data: { expiresAt: new Date(Date.now() + interval * 86400000) },
+-          });
+-          await tx.payment.update({
+-            where: { id: payment.id },
+-            data: { status, subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+-          });
+-        } else {
+-          const newSub = await tx.subscription.create({
+-            data: {
+-              userId: payment.userId,
+-              tier: "kashif",
+-              priceEgp: 0,
+-              expiresAt: new Date(Date.now() + 30 * 86400000),
+-            },
+-          });
+-          await tx.payment.update({
+-            where: { id: payment.id },
+-            data: { status, subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+-          });
+-        }
+-      } else {
+-        await tx.payment.update({
+-          where: { id: payment.id },
+-          data: { status, metadata: { ...(payment.metadata as Record<string, unknown>), callback: rest } },
+-        });
+-      }
+-    });
+-
+     return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Callback processing failed" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+diff --git a/src/modules/payments/payments.service.ts b/src/modules/payments/payments.service.ts
+new file mode 100644
+index 0000000..21ecc44
+--- /dev/null
++++ b/src/modules/payments/payments.service.ts
+@@ -0,0 +1,74 @@
++import { prisma } from "@/lib/db";
++import type { Prisma } from "@prisma/client";
++import { NotFoundError, ConflictError } from "@/lib/errors";
++
++export async function getPayments(userId: string) {
++  return prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
++}
++
++export async function getPayment(id: string, userId: string) {
++  const payment = await prisma.payment.findFirst({ where: { id, userId } });
++  if (!payment) throw new NotFoundError("Payment");
++  return payment;
++}
++
++export async function createPayment(userId: string, data: { amount: number; currency: string; provider: string; providerRefNum: string; metadata?: Record<string, unknown> }) {
++  return prisma.payment.create({ data: { ...data, userId, status: "pending", metadata: data.metadata as Prisma.InputJsonValue } });
++}
++
++export async function completePayment(id: string, callbackData?: Record<string, unknown>) {
++  const payment = await prisma.payment.findUnique({ where: { id } });
++  if (!payment) throw new NotFoundError("Payment");
++  if (payment.status === "completed") throw new ConflictError("Payment already completed");
++
++  return prisma.$transaction(async (tx) => {
++    const existingSub = await tx.subscription.findFirst({
++      where: { userId: payment.userId, status: "active" },
++    });
++
++    if (existingSub) {
++      const interval = existingSub.interval === "yearly" ? 365 : 30;
++      const updatedSub = await tx.subscription.update({
++        where: { id: existingSub.id },
++        data: { expiresAt: new Date(Date.now() + interval * 86400000) },
++      });
++      return tx.payment.update({
++        where: { id },
++        data: { status: "completed", subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
++      });
++    }
++
++    const newSub = await tx.subscription.create({
++      data: { userId: payment.userId, tier: "kashif", priceEgp: 0, expiresAt: new Date(Date.now() + 30 * 86400000) },
++    });
++    return tx.payment.update({
++      where: { id },
++      data: { status: "completed", subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
++    });
++  });
++}
++
++export async function failPayment(id: string, callbackData?: Record<string, unknown>) {
++  const payment = await prisma.payment.findUnique({ where: { id } });
++  if (!payment) throw new NotFoundError("Payment");
++  return prisma.payment.update({
++    where: { id },
++    data: { status: "failed", metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
++  });
++}
++
++export async function getCatalogItemForPayment(catalogItemId: string, userId: string) {
++  const item = await prisma.catalogItem.findFirst({
++    where: { id: catalogItemId, userId, isActive: true },
++  });
++  if (!item) throw new NotFoundError("Catalog item");
++  return item;
++}
++
++export async function findPaymentByRef(providerRefNum: string) {
++  return prisma.payment.findFirst({ where: { providerRefNum } });
++}
++
++export async function getSubscription(userId: string) {
++  return prisma.subscription.findFirst({ where: { userId } });
++}
+diff --git a/src/modules/reviews/reviews.controller.ts b/src/modules/reviews/reviews.controller.ts
+index 019b463..ef287a3 100644
+--- a/src/modules/reviews/reviews.controller.ts
++++ b/src/modules/reviews/reviews.controller.ts
+@@ -1,96 +1,63 @@
+ import { NextRequest, NextResponse } from "next/server";
+-import { prisma } from "@/lib/db";
+ import { authenticateUser } from "@/lib/auth";
++import { handleApiError } from "@/lib/errors";
++import * as reviewsService from "./reviews.service";
+ 
+ export async function listReviewsController() {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
+-    const reviews = await prisma.review.findMany({
+-      where: { userId: auth.userId },
+-      orderBy: { createdAt: "desc" },
+-    });
++    const user = await authenticateUser();
++    const reviews = await reviewsService.getReviews(user.userId);
+     return NextResponse.json({ reviews });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function createReviewController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { authorName, content, rating, source } = await req.json();
+     if (!authorName || !content || !rating) {
+       return NextResponse.json({ error: "authorName, content, and rating are required" }, { status: 400 });
+     }
+-
+-    const review = await prisma.review.create({
+-      data: { userId: auth.userId, authorName, content, rating, source },
+-    });
++    const review = await reviewsService.createReview(user.userId, { authorName, content, rating, source });
+     return NextResponse.json({ review });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to create review" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function updateReviewController(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
+-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+-
+     const { authorName, content, rating, source, isApproved } = await req.json();
+-    const review = await prisma.review.update({
+-      where: { id },
+-      data: {
+-        ...(authorName !== undefined && { authorName }),
+-        ...(content !== undefined && { content }),
+-        ...(rating !== undefined && { rating }),
+-        ...(source !== undefined && { source }),
+-        ...(isApproved !== undefined && { isApproved }),
+-      },
+-    });
++    const review = await reviewsService.updateReview(id, user.userId, { authorName, content, rating, source, isApproved });
+     return NextResponse.json({ review });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to update review" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function deleteReviewController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const existing = await prisma.review.findFirst({ where: { id, userId: auth.userId } });
+-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+-
+-    await prisma.review.delete({ where: { id } });
++    await reviewsService.deleteReview(id, user.userId);
+     return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function publicReviewsController(req: NextRequest) {
+   try {
+     const { searchParams } = new URL(req.url);
+     const userId = searchParams.get("userId");
+     if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
+-
+-    const reviews = await prisma.review.findMany({
+-      where: { userId, isApproved: true },
+-      orderBy: { createdAt: "desc" },
+-      select: { authorName: true, content: true, rating: true, source: true, createdAt: true },
+-    });
++    const reviews = await reviewsService.getPublicReviews(userId);
+     return NextResponse.json({ reviews });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+diff --git a/src/modules/reviews/reviews.service.ts b/src/modules/reviews/reviews.service.ts
+new file mode 100644
+index 0000000..022d766
+--- /dev/null
++++ b/src/modules/reviews/reviews.service.ts
+@@ -0,0 +1,36 @@
++import { prisma } from "@/lib/db";
++import { NotFoundError } from "@/lib/errors";
++
++export async function getReviews(userId: string) {
++  return prisma.review.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
++}
++
++export async function getReview(id: string, userId: string) {
++  const review = await prisma.review.findFirst({ where: { id, userId } });
++  if (!review) throw new NotFoundError("Review");
++  return review;
++}
++
++export async function createReview(userId: string, data: { authorName: string; content: string; rating: number; source?: string }) {
++  return prisma.review.create({ data: { ...data, userId } });
++}
++
++export async function updateReview(id: string, userId: string, data: { authorName?: string; content?: string; rating?: number; source?: string; isApproved?: boolean }) {
++  const review = await prisma.review.findFirst({ where: { id, userId } });
++  if (!review) throw new NotFoundError("Review");
++  return prisma.review.update({ where: { id }, data });
++}
++
++export async function deleteReview(id: string, userId: string) {
++  const review = await prisma.review.findFirst({ where: { id, userId } });
++  if (!review) throw new NotFoundError("Review");
++  return prisma.review.delete({ where: { id } });
++}
++
++export async function getPublicReviews(userId: string) {
++  return prisma.review.findMany({
++    where: { userId, isApproved: true },
++    orderBy: { createdAt: "desc" },
++    select: { authorName: true, content: true, rating: true, source: true, createdAt: true },
++  });
++}
+diff --git a/src/modules/social/social.controller.ts b/src/modules/social/social.controller.ts
+index c10a3cb..dd6233d 100644
+--- a/src/modules/social/social.controller.ts
++++ b/src/modules/social/social.controller.ts
+@@ -1,156 +1,90 @@
+ import { NextRequest, NextResponse } from "next/server";
+-import { prisma } from "@/lib/db";
+ import { authenticateUser } from "@/lib/auth";
++import { handleApiError } from "@/lib/errors";
+ import { encrypt } from "@/lib/encryption";
++import * as socialService from "./social.service";
+ 
+ export async function listAccountsController() {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
+-    const accounts = await prisma.socialAccount.findMany({
+-      where: { userId: auth.userId },
+-      orderBy: { platform: "asc" },
+-      select: { id: true, platform: true, handle: true },
+-    });
+-
++    const user = await authenticateUser();
++    const accounts = await socialService.getSocialAccounts(user.userId);
+     return NextResponse.json({ accounts });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function createAccountController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { platform, handle, token: socialToken } = await req.json();
+     if (!platform) {
+       return NextResponse.json({ error: "Platform required" }, { status: 400 });
+     }
+-
+-    const existing = await prisma.socialAccount.findUnique({
+-      where: { userId_platform: { userId: auth.userId, platform } },
+-    });
+-    if (existing) {
+-      return NextResponse.json({ error: "Account already connected" }, { status: 409 });
+-    }
+-
+-    const encryptedToken = socialToken ? encrypt(socialToken) : null;
+-
+-    const account = await prisma.socialAccount.create({
+-      data: { userId: auth.userId, platform, handle, token: encryptedToken },
+-    });
+-
++    const encryptedToken = socialToken ? encrypt(socialToken) : undefined;
++    const account = await socialService.connectSocialAccount(user.userId, { platform, handle, token: encryptedToken });
+     return NextResponse.json({ account }, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function deleteAccountController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const account = await prisma.socialAccount.findFirst({ where: { id, userId: auth.userId } });
+-    if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+-
+-    await prisma.socialAccount.delete({ where: { id } });
++    await socialService.disconnectSocialAccount(id, user.userId);
+     return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function listPostsController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { searchParams } = new URL(req.url);
+-    const status = searchParams.get("status");
+-    const accountId = searchParams.get("accountId");
+-
+-    const where: Record<string, unknown> = {
+-      account: { userId: auth.userId },
+-    };
+-    if (status) where.status = status;
+-    if (accountId) where.accountId = accountId;
+-
+-    const posts = await prisma.socialPost.findMany({
+-      where: where as any,
+-      include: { account: { select: { platform: true, handle: true } }, analytics: true },
+-      orderBy: { scheduledAt: "desc" },
+-    });
+-
++    const status = searchParams.get("status") || undefined;
++    const accountId = searchParams.get("accountId") || undefined;
++    const posts = await socialService.getSocialPosts(user.userId, { status, accountId });
+     return NextResponse.json({ posts });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function createPostController(req: NextRequest) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { accountId, content, mediaUrls, scheduledAt } = await req.json();
+     if (!accountId || !content) {
+       return NextResponse.json({ error: "accountId and content required" }, { status: 400 });
+     }
+-
+-    const account = await prisma.socialAccount.findFirst({ where: { id: accountId, userId: auth.userId } });
+-    if (!account) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+-
+-    const scheduled = scheduledAt ? new Date(scheduledAt) : null;
+-    const status = scheduled && scheduled > new Date() ? "scheduled" : "draft";
+-
+-    const post = await prisma.socialPost.create({
+-      data: { accountId, content, mediaUrls: mediaUrls || [], scheduledAt: scheduled, status },
+-      include: { account: { select: { platform: true, handle: true } } },
+-    });
+-
++    const post = await socialService.createSocialPost(user.userId, { accountId, content, mediaUrls, scheduledAt });
+     return NextResponse.json({ post }, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function deletePostController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const post = await prisma.socialPost.findFirst({
+-      where: { id, account: { userId: auth.userId } },
+-    });
+-    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+-
+-    await prisma.socialPost.delete({ where: { id } });
++    await socialService.deleteSocialPost(id, user.userId);
+     return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+ 
+ export async function getAnalyticsController(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+   try {
+-    const auth = await authenticateUser();
+-    if (auth instanceof NextResponse) return auth;
+-
++    const user = await authenticateUser();
+     const { id } = await params;
+-    const post = await prisma.socialPost.findFirst({
+-      where: { id, account: { userId: auth.userId } },
+-    });
+-    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+-
+-    const analytics = await prisma.socialAnalytics.findUnique({ where: { postId: id } });
+-    return NextResponse.json({ analytics: analytics || { likes: 0, shares: 0, comments: 0, clicks: 0, reach: 0 } });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch analytics" }, { status: 500 });
++    const analytics = await socialService.getPostAnalytics(id, user.userId);
++    return NextResponse.json({ analytics });
++  } catch (err) {
++    return handleApiError(err);
+   }
+ }
+diff --git a/src/modules/social/social.service.ts b/src/modules/social/social.service.ts
+new file mode 100644
+index 0000000..f89aaf8
+--- /dev/null
++++ b/src/modules/social/social.service.ts
+@@ -0,0 +1,59 @@
++import { prisma } from "@/lib/db";
++import { NotFoundError, ConflictError } from "@/lib/errors";
++
++export async function getSocialAccounts(userId: string) {
++  return prisma.socialAccount.findMany({
++    where: { userId },
++    orderBy: { platform: "asc" },
++    select: { id: true, platform: true, handle: true },
++  });
++}
++
++export async function connectSocialAccount(userId: string, data: { platform: string; handle: string; token?: string }) {
++  const existing = await prisma.socialAccount.findUnique({
++    where: { userId_platform: { userId, platform: data.platform } },
++  });
++  if (existing) throw new ConflictError("Account already connected");
++  return prisma.socialAccount.create({ data: { ...data, userId } });
++}
++
++export async function disconnectSocialAccount(id: string, userId: string) {
++  const account = await prisma.socialAccount.findFirst({ where: { id, userId } });
++  if (!account) throw new NotFoundError("Social account");
++  return prisma.socialAccount.delete({ where: { id } });
++}
++
++export async function getSocialPosts(userId: string, filters?: { status?: string; accountId?: string }) {
++  const where: Record<string, unknown> = { account: { userId } };
++  if (filters?.status) where.status = filters.status;
++  if (filters?.accountId) where.accountId = filters.accountId;
++  return prisma.socialPost.findMany({
++    where: where as any,
++    include: { account: { select: { platform: true, handle: true } }, analytics: true },
++    orderBy: { scheduledAt: "desc" },
++  });
++}
++
++export async function createSocialPost(userId: string, data: { accountId: string; content: string; mediaUrls?: string[]; scheduledAt?: string }) {
++  const account = await prisma.socialAccount.findFirst({ where: { id: data.accountId, userId } });
++  if (!account) throw new NotFoundError("Social account");
++  const scheduled = data.scheduledAt ? new Date(data.scheduledAt) : null;
++  const status = scheduled && scheduled > new Date() ? "scheduled" : "draft";
++  return prisma.socialPost.create({
++    data: { accountId: data.accountId, content: data.content, mediaUrls: data.mediaUrls || [], scheduledAt: scheduled, status },
++    include: { account: { select: { platform: true, handle: true } } },
++  });
++}
++
++export async function deleteSocialPost(id: string, userId: string) {
++  const post = await prisma.socialPost.findFirst({ where: { id, account: { userId } } });
++  if (!post) throw new NotFoundError("Post");
++  return prisma.socialPost.delete({ where: { id } });
++}
++
++export async function getPostAnalytics(id: string, userId: string) {
++  const post = await prisma.socialPost.findFirst({ where: { id, account: { userId } } });
++  if (!post) throw new NotFoundError("Post");
++  const analytics = await prisma.socialAnalytics.findUnique({ where: { postId: id } });
++  return analytics || { likes: 0, shares: 0, comments: 0, clicks: 0, reach: 0 };
++}

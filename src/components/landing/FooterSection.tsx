@@ -14,7 +14,8 @@ export function FooterSection() {
   ];
 
   return (
-    <footer className="border-t border-accent-gold/20 py-14 px-6 bg-bg-primary">
+    <footer className="relative py-14 px-6 bg-bg-primary overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent-gold/40 to-transparent" />
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-2">

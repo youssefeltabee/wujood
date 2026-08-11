@@ -153,7 +153,9 @@ model Audit {
   id           String    @id @default(cuid())
   userId       String?
   url          String
-  totalScore   Int
+  status       String    @default("pending")
+  error        String?
+  totalScore   Int       @default(0)
   mobileScore  Int       @default(0)
   speedScore   Int       @default(0)
   seoScore     Int       @default(0)
@@ -164,6 +166,7 @@ model Audit {
   aiScore      Int       @default(0)
   trustScore   Int       @default(0)
   contactScore Int       @default(0)
+  preLaunchScore Int     @default(0)
   rawData      Json?
   pdfUrl       String?
   deletedAt    DateTime?

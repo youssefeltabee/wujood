@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { Navigation } from "@/components/navigation/Navigation";
+
+export const metadata: Metadata = {
+  title: "Testimonials",
+  description: "See what our customers say about their experience with Wujood.",
+};
 
 export default function TestimonialsPage() {
   return (

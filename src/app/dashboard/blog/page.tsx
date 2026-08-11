@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, Button, Input, Badge, Modal, Spinner, useToast } from "@/components/ui";
+import { Card, Button, Input, Badge, Spinner, useToast, Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui";
 
 interface BlogPost {
   id: string;
@@ -99,7 +99,11 @@ export default function BlogDashboardPage() {
         <Button onClick={() => { resetForm(); setShowNew(true); }}>New Post</Button>
       </div>
 
-      <Modal open={showNew} onClose={() => setShowNew(false)} title="New Post" size="lg">
+      <Dialog open={showNew} onOpenChange={(o) => setShowNew(o)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>New Post</DialogTitle>
+          </DialogHeader>
         <div className="space-y-3">
           <Input label="Title" value={title} onChange={(e) => autoSlug(e.target.value)} />
           <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
@@ -114,9 +118,14 @@ export default function BlogDashboardPage() {
           </label>
           <Button onClick={createPost} disabled={!title || !slug || !content}>Create</Button>
         </div>
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
-      <Modal open={!!editPost} onClose={() => setEditPost(null)} title="Edit Post" size="lg">
+      <Dialog open={!!editPost} onOpenChange={(o) => { if (!o) setEditPost(null); }}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+          </DialogHeader>
         <div className="space-y-3">
           <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
           <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
@@ -134,15 +143,21 @@ export default function BlogDashboardPage() {
             <Button variant="ghost" onClick={() => setEditPost(null)}>Cancel</Button>
           </div>
         </div>
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
-      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Delete Post" size="sm">
+      <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) setDeleteId(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Post</DialogTitle>
+          </DialogHeader>
         <p className="text-text-secondary mb-4">Are you sure you want to delete this post? This cannot be undone.</p>
         <div className="flex gap-2">
           <Button variant="danger" onClick={deletePost}>Delete</Button>
           <Button variant="ghost" onClick={() => setDeleteId(null)}>Cancel</Button>
         </div>
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
       <Card variant="elevated" padding="md">
         {posts.length === 0 ? (
