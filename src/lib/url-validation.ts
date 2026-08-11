@@ -6,12 +6,19 @@ const PRIVATE_IP_PATTERNS = [
   /^192\.168\./,
   /^127\./,
   /^0\./,
+  /^169\.254\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
+  /^192\.0\.0\./,
+  /^198\.1[89]\./,
   /^localhost$/i,
+  /\.localhost$/i,
   /\.local$/i,
   /\.internal$/i,
   /^::1$/,
-  /^fc00:/,
+  /^\[?::1\]?$/,
+  /^f[cd][0-9a-f]{2}:/i,
   /^fe80:/,
+  /^::ffff:/i,
 ];
 
 export function validateUrl(url: string): URL {
@@ -26,7 +33,7 @@ export function validateUrl(url: string): URL {
     throw new ValidationError("Only HTTP/HTTPS URLs are allowed");
   }
 
-  const hostname = parsed.hostname;
+  const hostname = parsed.hostname.replace(/^\[|]$/g, "");
   for (const pattern of PRIVATE_IP_PATTERNS) {
     if (pattern.test(hostname)) {
       throw new ValidationError("Private/internal URLs are not allowed");

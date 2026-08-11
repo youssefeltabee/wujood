@@ -1,6 +1,6 @@
 export { cn } from "@/lib/utils";
-export { Button } from "./button";
-export type { ButtonProps } from "./button";
+export { Button } from "./Button";
+export type { ButtonProps } from "./Button";
 export { Input } from "./Input";
 export type { InputProps } from "./Input";
 export { Card } from "./Card";

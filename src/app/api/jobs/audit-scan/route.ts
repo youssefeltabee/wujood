@@ -51,13 +51,19 @@ export async function POST(req: Request) {
       },
     });
 
-    await enqueueJob("pdf-generation", { auditId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     await prisma.audit.update({
       where: { id: auditId },
       data: { status: "FAILED", error: message },
     });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+
+  try {
+    await enqueueJob("pdf-generation", { auditId });
+  } catch (error) {
+    console.error(`Failed to enqueue PDF generation for audit ${auditId}:`, error);
   }
 
   return NextResponse.json({ success: true });
