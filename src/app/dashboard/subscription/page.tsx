@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, Button, Badge, Modal, Spinner, useToast } from "@/components/ui";
-
-interface SubscriptionData {
-  id: string;
-  tier: string;
-  status: string;
-  interval: string;
-  priceEgp: number;
-  startedAt: string;
-  expiresAt: string | null;
-  canceledAt: string | null;
-}
+import { useState } from "react";
+import { Card, Button, Badge, Spinner, useToast } from "@/components/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  useSubscription,
+  useCancelSubscription,
+  useChangeTier,
+} from "@/hooks/use-subscription";
+import { siteConfig } from "@/config/site";
 
 const tierLabels: Record<string, string> = {
   kashif: "Kashif",
@@ -34,62 +35,43 @@ const statusBadgeVariant: Record<string, "success" | "danger" | "warning"> = {
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useSubscription();
+  const subscription = data?.subscription ?? null;
+
+  const cancelMutation = useCancelSubscription();
+  const changeTierMutation = useChangeTier();
+
   const [cancelOpen, setCancelOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
-  async function fetchSubscription() {
-    const res = await fetch("/api/subscriptions");
-    if (res.ok) {
-      const data = await res.json();
-      setSubscription(data.subscription);
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    fetchSubscription();
-  }, []);
-
-  async function cancelSubscription() {
-    setActionLoading(true);
-    const res = await fetch("/api/subscriptions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel" }),
+  function handleCancel() {
+    cancelMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast("Subscription canceled", "success");
+        setCancelOpen(false);
+      },
+      onError: (err: Error) => {
+        toast(err.message || "Failed to cancel", "error");
+      },
     });
-    setActionLoading(false);
-    setCancelOpen(false);
-    if (res.ok) {
-      toast("Subscription canceled", "success");
-      await fetchSubscription();
-    } else {
-      const err = await res.json();
-      toast(err.error || "Failed to cancel", "error");
-    }
   }
 
-  async function upgradeTier() {
-    setActionLoading(true);
-    const res = await fetch("/api/subscriptions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "change-tier", tier: "sane" }),
+  function handleUpgrade() {
+    if (!selectedTier) return;
+    changeTierMutation.mutate(selectedTier, {
+      onSuccess: () => {
+        toast(`Upgraded to ${tierLabels[selectedTier]}`, "success");
+        setUpgradeOpen(false);
+        setSelectedTier(null);
+      },
+      onError: (err: Error) => {
+        toast(err.message || "Failed to upgrade", "error");
+      },
     });
-    setActionLoading(false);
-    setUpgradeOpen(false);
-    if (res.ok) {
-      toast("Upgraded to Sane'", "success");
-      await fetchSubscription();
-    } else {
-      const err = await res.json();
-      toast(err.error || "Failed to upgrade", "error");
-    }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
@@ -97,10 +79,20 @@ export default function SubscriptionPage() {
     );
   }
 
+  // Tiers the user can upgrade to (higher price than current)
+  const upgradeableTiers = subscription
+    ? siteConfig.tiers.filter((t) => {
+        const current = siteConfig.tiers.find((x) => x.id === subscription.tier);
+        return current && t.price > current.price;
+      })
+    : siteConfig.tiers;
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary mb-1">Subscription</h1>
+        <h1 className="text-3xl font-bold text-text-primary mb-1">
+          Subscription
+        </h1>
         <p className="text-text-secondary">Manage your plan and billing.</p>
       </div>
 
@@ -108,8 +100,12 @@ export default function SubscriptionPage() {
         <Card.Body>
           {!subscription ? (
             <div className="text-center py-8">
-              <p className="text-text-muted mb-4">You don&apos;t have an active subscription yet.</p>
-              <p className="text-sm text-text-muted">Complete a payment to get started.</p>
+              <p className="text-text-muted mb-4">
+                You don&apos;t have an active subscription yet.
+              </p>
+              <p className="text-sm text-text-muted">
+                Complete a payment to get started.
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -120,12 +116,20 @@ export default function SubscriptionPage() {
                     <h2 className="text-2xl font-bold text-text-primary">
                       {tierLabels[subscription.tier] || subscription.tier}
                     </h2>
-                    <Badge variant={statusBadgeVariant[subscription.status] || "default"} size="sm">
+                    <Badge
+                      variant={
+                        statusBadgeVariant[subscription.status] || "default"
+                      }
+                      size="sm"
+                    >
                       {subscription.status}
                     </Badge>
                   </div>
                 </div>
-                <Badge variant={tierBadgeVariant[subscription.tier] || "default"} size="md">
+                <Badge
+                  variant={tierBadgeVariant[subscription.tier] || "default"}
+                  size="md"
+                >
                   {subscription.interval === "yearly" ? "Yearly" : "Monthly"}
                 </Badge>
               </div>
@@ -157,12 +161,18 @@ export default function SubscriptionPage() {
 
               {subscription.status === "active" && (
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {subscription.tier !== "raed" && (
-                    <Button variant="primary" onClick={() => setUpgradeOpen(true)}>
-                      Upgrade to Ra'ed
+                  {upgradeableTiers.length > 0 && (
+                    <Button
+                      variant="primary"
+                      onClick={() => setUpgradeOpen(true)}
+                    >
+                      Upgrade Plan
                     </Button>
                   )}
-                  <Button variant="danger" onClick={() => setCancelOpen(true)}>
+                  <Button
+                    variant="danger"
+                    onClick={() => setCancelOpen(true)}
+                  >
                     Cancel Subscription
                   </Button>
                 </div>
@@ -172,29 +182,95 @@ export default function SubscriptionPage() {
         </Card.Body>
       </Card>
 
-      <Modal open={cancelOpen} onClose={() => setCancelOpen(false)} title="Cancel Subscription" size="sm">
-        <p className="text-text-secondary text-sm mb-6">
-          Are you sure you want to cancel your subscription? You&apos;ll lose access at the end of the billing period.
-        </p>
-        <div className="flex gap-3 justify-end">
-          <Button variant="secondary" onClick={() => setCancelOpen(false)}>Keep Subscription</Button>
-          <Button variant="danger" onClick={cancelSubscription} isLoading={actionLoading}>
-            Confirm Cancel
-          </Button>
-        </div>
-      </Modal>
+      <Dialog
+        open={cancelOpen}
+        onOpenChange={(o) => setCancelOpen(o)}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Cancel Subscription</DialogTitle>
+          </DialogHeader>
+          <p className="text-text-secondary text-sm mb-6">
+            Are you sure you want to cancel your subscription? You&apos;ll lose
+            access at the end of the billing period.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" onClick={() => setCancelOpen(false)}>
+              Keep Subscription
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleCancel}
+              isLoading={cancelMutation.isPending}
+            >
+              Confirm Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      <Modal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} title="Upgrade to Ra'ed" size="sm">
-        <p className="text-text-secondary text-sm mb-6">
-          Upgrade to Ra'ed for EGP 4,500/month and unlock all premium features. Your current plan will be canceled.
-        </p>
-        <div className="flex gap-3 justify-end">
-          <Button variant="secondary" onClick={() => setUpgradeOpen(false)}>Not Now</Button>
-          <Button variant="primary" onClick={upgradeTier} isLoading={actionLoading}>
-            Upgrade Now
-          </Button>
-        </div>
-      </Modal>
+      <Dialog
+        open={upgradeOpen}
+        onOpenChange={(o) => {
+          setUpgradeOpen(o);
+          if (!o) setSelectedTier(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upgrade Plan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mb-6">
+            {upgradeableTiers.map((tier) => (
+              <button
+                key={tier.id}
+                onClick={() => setSelectedTier(tier.id)}
+                className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                  selectedTier === tier.id
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-bg-elevated hover:border-border/80"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-text-primary">
+                      {tier.name.en}
+                      <span className="text-text-muted ms-2">{tier.name.ar}</span>
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      EGP {tier.price.toLocaleString()}/month
+                    </p>
+                  </div>
+                  {tier.popular && (
+                    <Badge variant="info" size="sm">
+                      Popular
+                    </Badge>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setUpgradeOpen(false);
+                setSelectedTier(null);
+              }}
+            >
+              Not Now
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleUpgrade}
+              isLoading={changeTierMutation.isPending}
+              disabled={!selectedTier}
+            >
+              Upgrade Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

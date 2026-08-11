@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Badge, Button, Input, Select, Modal, Spinner, useToast } from "@/components/ui";
+import { Card, Badge, Button, Input, Select, Spinner, useToast, Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui";
 
 interface Review {
   id: string;
@@ -184,7 +184,11 @@ export default function ReviewsPage() {
         </div>
       )}
 
-      <Modal open={formOpen} onClose={() => { setFormOpen(false); resetForm(); }} title="Add Review">
+      <Dialog open={formOpen} onOpenChange={(o) => { if (!o) { setFormOpen(false); resetForm(); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Review</DialogTitle>
+          </DialogHeader>
         <div className="space-y-4">
           <Input label="Author Name" value={authorName} onChange={(e) => setAuthorName(e.target.value)} required />
           <Input label="Content" value={content} onChange={(e) => setContent(e.target.value)} required />
@@ -200,7 +204,8 @@ export default function ReviewsPage() {
             <Button onClick={handleCreate} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
           </div>
         </div>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { StatsSection } from "@/components/landing/StatsSection";
-import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Navigation } from "@/components/navigation/Navigation";
+import LandingClient from "@/components/LandingClient";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -13,11 +11,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Navigation />
-      <main className="pt-[var(--spacing-nav-height)]">
-        <HeroSection />
-        <StatsSection />
-        <FinalCTASection />
-      </main>
+      <div className="pt-[var(--spacing-nav-height)]">
+        <LandingClient />
+      </div>
     </div>
   );
 }

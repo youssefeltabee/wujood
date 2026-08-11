@@ -12,7 +12,7 @@ export async function sendEmail({ to, subject, text, html }: EmailParams) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Wujood <onboarding@wujood.app>", to, subject, text, html }),
+      body: JSON.stringify({ from: "Wujood <noreply@wujood.vercel.app>", to, subject, text, html }),
     });
     if (!res.ok) console.error("Email send failed:", await res.text());
     return res.ok;
@@ -44,6 +44,6 @@ export async function sendAuditCompleteEmail(email: string, url: string, score: 
     to: email,
     subject: "Your Audit is Ready - Wujood",
     text: `Your audit for ${url} is complete! Score: ${score}/100.\n\nLog in to view the full report.\n\nBest,\nThe Wujood Team`,
-    html: `<p>Your audit for <strong>${url}</strong> is complete!</p><p>Score: <strong>${score}/100</strong></p><p><a href="https://wujood.app/dashboard">Log in</a> to view the full report.</p><p>Best,<br>The Wujood Team</p>`,
+    html: `<p>Your audit for <strong>${url}</strong> is complete!</p><p>Score: <strong>${score}/100</strong></p><p><a href="https://wujood.vercel.app/dashboard">Log in</a> to view the full report.</p><p>Best,<br>The Wujood Team</p>`,
   });
 }

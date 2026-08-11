@@ -77,6 +77,7 @@ export async function getAuditController(_req: NextRequest, { params }: { params
         mobileScore: true, speedScore: true, seoScore: true,
         contentScore: true, socialScore: true, pricingScore: true,
         paymentScore: true, aiScore: true, trustScore: true, contactScore: true,
+        preLaunchScore: true,
       },
     });
 
@@ -108,6 +109,7 @@ export async function auditStatusController(_req: NextRequest, { params }: { par
         mobileScore: true, speedScore: true, seoScore: true,
         contentScore: true, socialScore: true, pricingScore: true,
         paymentScore: true, aiScore: true, trustScore: true, contactScore: true,
+        preLaunchScore: true,
         rawData: true,
       },
     });
@@ -127,6 +129,7 @@ export async function auditStatusController(_req: NextRequest, { params }: { par
           socialScore: audit.socialScore, pricingScore: audit.pricingScore,
           paymentScore: audit.paymentScore, aiScore: audit.aiScore,
           trustScore: audit.trustScore, contactScore: audit.contactScore,
+          preLaunchScore: audit.preLaunchScore,
           rawData: audit.rawData,
         },
       });
@@ -162,6 +165,7 @@ export async function pdfAuditController(req: NextRequest, { params }: { params:
       socialScore: audit.socialScore, pricingScore: audit.pricingScore,
       paymentScore: audit.paymentScore, aiScore: audit.aiScore,
       trustScore: audit.trustScore, contactScore: audit.contactScore,
+      preLaunchScore: audit.preLaunchScore,
       rawData: (audit.rawData as Record<string, unknown>) || {},
     });
 

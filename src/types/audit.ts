@@ -9,6 +9,7 @@ export type AuditScore = {
   aiScore: number;
   trustScore: number;
   contactScore: number;
+  preLaunchScore: number;
   totalScore: number;
 };
 

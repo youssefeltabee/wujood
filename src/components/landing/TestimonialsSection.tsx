@@ -22,7 +22,7 @@ function initials(name: string) {
 export function TestimonialsSection() {
   const { t } = useLocale();
   const slides = testimonials.map((tst) => (
-    <article className="card-tilt-inner relative overflow-hidden bg-bg-surface border border-border-subtle rounded-2xl p-6 md:p-8 text-left transition-transform duration-300 hover:-translate-y-1">
+    <article className="card-tilt-inner relative overflow-hidden glass rounded-2xl p-6 md:p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-accent-gold/5">
       <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-accent-gold/10 blur-2xl" aria-hidden />
       <div className="flex items-center gap-1 mb-4">
         {[1, 2, 3, 4, 5].map((s) => (

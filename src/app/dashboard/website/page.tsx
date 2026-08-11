@@ -112,7 +112,7 @@ export default function WebsiteDashboardPage() {
             </Badge>
             {website.isPublished && website.domain && (
               <a
-                href={`https://${website.domain}.wujood-app.vercel.app`}
+                href={`https://${website.domain}.wujood.vercel.app`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-accent-gold hover:underline"
@@ -141,7 +141,7 @@ export default function WebsiteDashboardPage() {
               <label className="block text-sm font-medium text-text-secondary mb-1">Subdomain</label>
               <div className="flex items-center gap-2">
                 <Input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="my-business" className="font-mono" />
-                <span className="text-sm text-text-muted shrink-0">.wujood-app.vercel.app</span>
+                <span className="text-sm text-text-muted shrink-0">.wujood.vercel.app</span>
               </div>
             </div>
 

@@ -166,6 +166,7 @@ model Audit {
   aiScore      Int       @default(0)
   trustScore   Int       @default(0)
   contactScore Int       @default(0)
+  preLaunchScore Int     @default(0)
   rawData      Json?
   pdfUrl       String?
   deletedAt    DateTime?

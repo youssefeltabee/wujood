@@ -191,7 +191,7 @@ Replace all `useEffect` + `useState` fetch patterns.
 ## 7. Phase 5: Stream B — Micro-sites
 
 ### 7.1 Subdomain Routing
-- Middleware: `*.wujood-app.vercel.app` → look up Website by slug
+- Middleware: `*.wujood.vercel.app` → look up Website by slug
 - Rewrite to `/website/[slug]`
 
 ### 7.2 Public Website
@@ -258,7 +258,7 @@ Replace all `useEffect` + `useState` fetch patterns.
 ### 10.2 Vercel
 - Fix environment variables
 - Configure build settings
-- Set up `wujood.app` domain
+- Set up `wujood.vercel.app` domain
 
 ### 10.3 Testing
 - Unit tests for services

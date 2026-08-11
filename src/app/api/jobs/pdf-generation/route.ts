@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       socialScore: audit.socialScore, pricingScore: audit.pricingScore,
       paymentScore: audit.paymentScore, aiScore: audit.aiScore,
       trustScore: audit.trustScore, contactScore: audit.contactScore,
+      preLaunchScore: audit.preLaunchScore,
       rawData: (audit.rawData as Record<string, unknown>) || {},
     });
 

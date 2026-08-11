@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname, hostname } = req.nextUrl;
 
-  const subdomainMatch = hostname.match(/^(.+)\.wujood-app\.vercel\.app$/);
+  const subdomainMatch = hostname.match(/^(.+)\.wujood\.vercel\.app$/);
   if (subdomainMatch) {
     const subdomain = subdomainMatch[1];
     if (subdomain !== "www") {

@@ -11,7 +11,7 @@ export function HeroIllustration() {
             <div className="w-2 h-2 rounded-full bg-yellow-400" />
             <div className="w-2 h-2 rounded-full bg-green-400" />
           </div>
-          <span className="text-xs text-text-muted font-medium">wujood.app/audit</span>
+          <span className="text-xs text-text-muted font-medium">wujood.vercel.app/audit</span>
         </div>
         <div className="text-center mb-5">
           <div className="text-5xl font-bold text-white mb-1">34</div>

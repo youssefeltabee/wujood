@@ -1665,7 +1665,7 @@ git commit -m "feat: subscription API routes — GET, cancel, change-tier"
 - Modify: `src/middleware.ts`
 
 **Interfaces:**
-- Produces: Middleware that rewrites `*.wujood-app.vercel.app` to `/website/[slug]`
+- Produces: Middleware that rewrites `*.wujood.vercel.app` to `/website/[slug]`
 
 - [ ] **Step 1: Update middleware.ts**
 
@@ -1704,7 +1704,7 @@ Expected: PASS
 
 ```bash
 git add src/middleware.ts
-git commit -m "feat: subdomain routing — *.wujood-app.vercel.app rewrites to /website/[slug]"
+git commit -m "feat: subdomain routing — *.wujood.vercel.app rewrites to /website/[slug]"
 ```
 
 ---
@@ -2399,17 +2399,17 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const { subject, html } = welcomeEmail(name);
-  await resend.emails.send({ from: "noreply@wujood.app", to, subject, html });
+  await resend.emails.send({ from: "noreply@wujood.vercel.app", to, subject, html });
 }
 
 export async function sendAuditCompleteEmail(to: string, userName: string, score: number) {
   const { subject, html } = auditCompleteEmail(userName, score);
-  await resend.emails.send({ from: "noreply@wujood.app", to, subject, html });
+  await resend.emails.send({ from: "noreply@wujood.vercel.app", to, subject, html });
 }
 
 export async function sendPaymentConfirmedEmail(to: string, userName: string, amount: number, tier: string) {
   const { subject, html } = paymentConfirmedEmail(userName, amount, tier);
-  await resend.emails.send({ from: "noreply@wujood.app", to, subject, html });
+  await resend.emails.send({ from: "noreply@wujood.vercel.app", to, subject, html });
 }
 ```
 

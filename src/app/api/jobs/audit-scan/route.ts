@@ -45,6 +45,7 @@ export async function POST(req: Request) {
         aiScore: score.categories.aiScore,
         trustScore: score.categories.trustScore,
         contactScore: score.categories.contactScore,
+        preLaunchScore: score.categories.preLaunchScore,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rawData: scan.rawData as any,
       },

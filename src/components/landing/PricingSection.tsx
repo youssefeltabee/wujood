@@ -5,7 +5,7 @@ import { Check, X } from "lucide-react";
 import { GeometricPattern } from "@/components/ui/GeometricPattern";
 import { RevealSection } from "@/components/ui/ScrollReveal";
 import { TiltCard } from "@/components/ui/TiltCard";
-import { Modal } from "@/components/ui/Modal";
+import { Dialog, DialogContent } from "@/components/ui";
 import { useLocale } from "@/lib/i18n";
 
 interface Tier {
@@ -41,7 +41,7 @@ function PricingCard({ tier, onShowDetails }: { tier: Tier; onShowDetails: () =>
 
   return (
     <TiltCard>
-      <div className={`card-tilt-inner relative bg-bg-surface border ${tier.popular ? "border-accent-gold ring-2 ring-accent-gold shadow-lg shadow-accent-gold/10" : "border-border-subtle"} rounded-3xl p-8`}>
+      <div className={`card-tilt-inner relative bg-bg-surface border ${tier.popular ? "border-accent-gold shadow-lg shadow-accent-gold/10 glow-gold" : "border-border-subtle"} rounded-3xl p-8 ${tier.popular ? "gradient-border" : ""}`}>
         {tier.popular && (
           <div className="absolute -top-3.5 left-7 bg-accent-gold text-white text-[11px] font-semibold px-3.5 py-1 rounded-full tracking-wide uppercase">
             {t("section.pricing.most-popular")}
@@ -109,8 +109,9 @@ export function PricingSection() {
         <p className="text-center text-xs text-text-muted mt-8">{t("section.pricing.annual")}</p>
       </div>
 
-      <Modal open={!!detailsTier} onClose={() => setDetailsTier(null)} size="lg">
-        {detailsTier && (
+      <Dialog open={!!detailsTier} onOpenChange={(o) => { if (!o) setDetailsTier(null); }}>
+        <DialogContent className="sm:max-w-2xl">
+          {detailsTier && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -154,7 +155,8 @@ export function PricingSection() {
             </div>
           </div>
         )}
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
