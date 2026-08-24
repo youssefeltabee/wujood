@@ -1,8 +1,31 @@
 import { PrismaClient } from "@prisma/client";
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // ponytail: single-admin bootstrap — SEED_ADMIN_EMAIL/PASSWORD override, else random password printed once
+  const email = process.env.SEED_ADMIN_EMAIL ?? "youssefeltabee@gmail.com";
+  const existingAdmin = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+  if (!existingAdmin) {
+    const password = process.env.SEED_ADMIN_PASSWORD ?? randomBytes(12).toString("base64url");
+    await prisma.user.create({
+      data: {
+        email,
+        name: "Youssef El Tabee",
+        passwordHash: await bcrypt.hash(password, 12),
+        role: "ADMIN",
+      },
+    });
+    if (!process.env.SEED_ADMIN_PASSWORD) {
+      console.log(`\n=== ADMIN ACCOUNT ===\nemail: ${email}\npassword: ${password}\n(change it after first login)\n`);
+    }
+  } else {
+    await prisma.user.update({ where: { id: existingAdmin.id }, data: { role: "ADMIN" } });
+    console.log(`Admin ${email} already exists`);
+  }
+
   console.log("Seeding templates...");
 
   const templates = [
@@ -20,18 +43,6 @@ async function main() {
   }
 
   console.log(`Seeded ${templates.length} templates`);
-
-  // ponytail: backfill orphan WhatsApp templates to first admin, skip if none exist
-  const admin = await prisma.user.findFirst({ where: { role: "ADMIN", deletedAt: null }, orderBy: { createdAt: "asc" } });
-  if (admin) {
-    const orphans = await prisma.whatsAppTemplate.updateMany({
-      where: { userId: null },
-      data: { userId: admin.id },
-    });
-    console.log(`Backfilled ${orphans.count} orphan WhatsApp templates to admin ${admin.email}`);
-  } else {
-    console.log("No admin user found; skipped WhatsApp template backfill");
-  }
 }
 
 main()

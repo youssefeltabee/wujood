@@ -60,9 +60,17 @@ npm install
 npx prisma db push && npx prisma generate
 ```
 
-If restoring an existing pre-v3 database, also run `prisma/normalize-status.sql` once against it (normalizes legacy lowercase status values to the new enums). Pending DB restore — skip on a fresh database.
+### 4. Seed (optional)
 
-### 4. Commands
+Creates the admin account (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` env vars, random password printed once if unset) and website design templates:
+
+```bash
+npx prisma db seed
+```
+
+> Restoring a pre-v3 database with existing rows? Normalize legacy lowercase status values to the v3 enums before `db push` — see CHANGELOG 3.0.0. Skip on fresh databases.
+
+### 5. Commands
 
 ```bash
 npm run dev          # http://localhost:3000

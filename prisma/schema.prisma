@@ -336,14 +336,14 @@ model SocialAnalytics {
 
 model WhatsAppTemplate {
   id       String   @id @default(cuid())
-  userId   String?
+  userId   String
   name     String
   category String   @default("marketing")
   content  String
   language String   @default("ar")
   status   String   @default("approved")
   createdAt DateTime @default(now())
-  user     User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
