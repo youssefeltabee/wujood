@@ -20,6 +20,18 @@ async function main() {
   }
 
   console.log(`Seeded ${templates.length} templates`);
+
+  // ponytail: backfill orphan WhatsApp templates to first admin, skip if none exist
+  const admin = await prisma.user.findFirst({ where: { role: "ADMIN", deletedAt: null }, orderBy: { createdAt: "asc" } });
+  if (admin) {
+    const orphans = await prisma.whatsAppTemplate.updateMany({
+      where: { userId: null },
+      data: { userId: admin.id },
+    });
+    console.log(`Backfilled ${orphans.count} orphan WhatsApp templates to admin ${admin.email}`);
+  } else {
+    console.log("No admin user found; skipped WhatsApp template backfill");
+  }
 }
 
 main()

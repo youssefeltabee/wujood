@@ -94,7 +94,7 @@ describe("AuditForm", () => {
     const { container } = render(<AuditForm />);
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audit: { id: "audit-42" } }),
+      json: async () => ({ success: true, data: { id: "audit-42" } }),
     });
 
     const input = screen.getByPlaceholderText("example.com");
@@ -190,7 +190,7 @@ describe("AuditForm", () => {
     // Now add a valid URL and submit again
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audit: { id: "x" } }),
+      json: async () => ({ success: true, data: { id: "x" } }),
     });
     const input = screen.getByPlaceholderText("example.com");
     fireEvent.change(input, { target: { value: "example.com" } });
@@ -205,7 +205,7 @@ describe("AuditForm", () => {
     const { container } = render(<AuditForm />);
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audit: { id: "trimmed" } }),
+      json: async () => ({ success: true, data: { id: "trimmed" } }),
     });
 
     const input = screen.getByPlaceholderText("example.com");
@@ -226,7 +226,7 @@ describe("AuditForm", () => {
     const { container } = render(<AuditForm />);
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audit: { id: "sub" } }),
+      json: async () => ({ success: true, data: { id: "sub" } }),
     });
 
     const input = screen.getByPlaceholderText("example.com");
@@ -242,7 +242,7 @@ describe("AuditForm", () => {
     const { container } = render(<AuditForm />);
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audit: { id: "hyphen" } }),
+      json: async () => ({ success: true, data: { id: "hyphen" } }),
     });
 
     const input = screen.getByPlaceholderText("example.com");

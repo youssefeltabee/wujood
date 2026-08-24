@@ -16,21 +16,21 @@ import {
 import { siteConfig } from "@/config/site";
 
 const tierLabels: Record<string, string> = {
-  kashif: "Kashif",
-  sane: "Sane'",
-  raed: "Ra'ed",
+  KASHIF: "Kashif",
+  SANE: "Sane'",
+  RAED: "Ra'ed",
 };
 
 const tierBadgeVariant: Record<string, "gold" | "info" | "default"> = {
-  kashif: "gold",
-  sane: "info",
-  raed: "default",
+  KASHIF: "gold",
+  SANE: "info",
+  RAED: "default",
 };
 
 const statusBadgeVariant: Record<string, "success" | "danger" | "warning"> = {
-  active: "success",
-  canceled: "danger",
-  expired: "warning",
+  ACTIVE: "success",
+  CANCELED: "danger",
+  EXPIRED: "warning",
 };
 
 export default function SubscriptionPage() {
@@ -159,7 +159,7 @@ export default function SubscriptionPage() {
                 )}
               </div>
 
-              {subscription.status === "active" && (
+              {subscription.status === "ACTIVE" && (
                 <div className="flex flex-wrap gap-3 pt-2">
                   {upgradeableTiers.length > 0 && (
                     <Button

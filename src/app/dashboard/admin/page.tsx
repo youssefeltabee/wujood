@@ -170,7 +170,7 @@ export default function AdminPage() {
                     <td className="py-3 pr-4 text-text-primary">{p.user?.email || "—"}</td>
                     <td className="py-3 pr-4 text-text-primary">EGP {Number(p.amount).toLocaleString()}</td>
                     <td className="py-3 pr-4">
-                      <Badge variant={p.status === "completed" ? "success" : p.status === "failed" ? "danger" : "warning"}>{p.status}</Badge>
+                      <Badge variant={p.status === "COMPLETED" ? "success" : p.status === "FAILED" ? "danger" : "warning"}>{p.status}</Badge>
                     </td>
                     <td className="py-3 text-text-secondary">{dateFormatter.format(new Date(p.createdAt))}</td>
                   </tr>

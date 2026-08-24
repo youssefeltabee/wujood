@@ -118,7 +118,7 @@ export async function auditStatusController(_req: NextRequest, { params }: { par
       throw new NotFoundError("Audit");
     }
 
-    if (audit.status === "completed") {
+    if (audit.status === "COMPLETED") {
       return jsonOk({
         id: audit.id,
         status: audit.status,
@@ -135,7 +135,7 @@ export async function auditStatusController(_req: NextRequest, { params }: { par
       });
     }
 
-    if (audit.status === "failed") {
+    if (audit.status === "FAILED") {
       return jsonOk({ id: audit.id, status: audit.status, error: audit.error });
     }
 

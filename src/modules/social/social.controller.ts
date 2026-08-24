@@ -44,7 +44,9 @@ export async function listPostsController(req: NextRequest) {
   try {
     const user = await authenticateUser();
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status") || undefined;
+    const rawStatus = searchParams.get("status") || undefined;
+    // ponytail: accept any casing, enum names are UPPER
+    const status = (rawStatus as string | undefined)?.toUpperCase() as "DRAFT" | "SCHEDULED" | "POSTED" | undefined;
     const accountId = searchParams.get("accountId") || undefined;
     const posts = await socialService.getSocialPosts(user.userId, { status, accountId });
     return NextResponse.json({ posts });

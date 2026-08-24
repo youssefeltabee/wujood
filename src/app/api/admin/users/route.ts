@@ -12,7 +12,7 @@ export async function GET() {
   if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { role: true } });
-  if (!user || user.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!user || user.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const users = await prisma.user.findMany({
     select: { id: true, email: true, name: true, companyName: true, role: true, createdAt: true },

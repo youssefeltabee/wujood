@@ -5,7 +5,7 @@ const DAY_MS = 86_400_000;
 
 function pay(overrides: Partial<TierGatePayment> = {}): TierGatePayment {
   return {
-    status: "completed",
+    status: "COMPLETED",
     metadata: { tier: "kashif" },
     createdAt: new Date(Date.now() - 5 * DAY_MS),
     ...overrides,
@@ -30,8 +30,8 @@ describe("assertTierPayment", () => {
   });
 
   it("rejects payments that are not completed", () => {
-    expect(assertTierPayment([pay({ status: "pending" })], "kashif").ok).toBe(false);
-    expect(assertTierPayment([pay({ status: "failed" })], "kashif").ok).toBe(false);
+    expect(assertTierPayment([pay({ status: "PENDING" })], "kashif").ok).toBe(false);
+    expect(assertTierPayment([pay({ status: "FAILED" })], "kashif").ok).toBe(false);
   });
 
   it("ignores payments without tier metadata", () => {

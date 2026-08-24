@@ -27,7 +27,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const isAdmin = await prisma.user.findUnique({ where: { id: user.userId }, select: { role: true } });
-  if (isAdmin?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (isAdmin?.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const result: Record<string, unknown> = {};
   result.hasDatabaseUrl = !!process.env.DATABASE_URL;

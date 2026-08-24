@@ -36,7 +36,7 @@ export async function createFawryCheckoutController(req: NextRequest) {
     const payment = await paymentsService.createPayment(user.userId, {
       amount,
       currency: "EGP",
-      provider: "fawry",
+      provider: "FAWRY",
       providerRefNum: merchantRefNum,
       metadata: { catalogItemId, quantity, itemName: item.name },
     });
@@ -95,7 +95,7 @@ export async function fawryCallbackController(req: NextRequest) {
 
     const payment = await paymentsService.findPaymentByRef(merchantRefCode);
     if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
-    if (payment.status === "completed") return NextResponse.json({ success: true });
+    if (payment.status === "COMPLETED") return NextResponse.json({ success: true });
 
     const isPaid = paymentStatus === "PAID" || paymentStatus === "SUCCESS";
     if (isPaid) {

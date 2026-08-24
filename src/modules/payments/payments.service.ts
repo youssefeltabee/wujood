@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, PaymentProvider } from "@prisma/client";
 import { NotFoundError, ConflictError } from "@/lib/errors";
 
 export async function getPayments(userId: string) {
@@ -12,21 +12,21 @@ export async function getPayment(id: string, userId: string) {
   return payment;
 }
 
-export async function createPayment(userId: string, data: { amount: number; currency: string; provider: string; providerRefNum: string; metadata?: Record<string, unknown> }) {
-  return prisma.payment.create({ data: { ...data, userId, status: "pending", metadata: data.metadata as Prisma.InputJsonValue } });
+export async function createPayment(userId: string, data: { amount: number; currency: string; provider: PaymentProvider; providerRefNum: string; metadata?: Record<string, unknown> }) {
+  return prisma.payment.create({ data: { ...data, userId, status: "PENDING", metadata: data.metadata as Prisma.InputJsonValue } });
 }
 
 export async function completePayment(id: string, callbackData?: Record<string, unknown>) {
   const payment = await prisma.payment.findUnique({ where: { id } });
   if (!payment) throw new NotFoundError("Payment");
-  if (payment.status === "completed") throw new ConflictError("Payment already completed");
+  if (payment.status === "COMPLETED") throw new ConflictError("Payment already completed");
 
   return prisma.$transaction(async (tx) => {
     const meta = (payment.metadata ?? {}) as Record<string, unknown>;
     const markCompleted = {
       where: { id },
       data: {
-        status: "completed",
+        status: "COMPLETED" as const,
         metadata: { ...meta, callback: callbackData } as Prisma.InputJsonValue,
       },
     };
@@ -37,7 +37,7 @@ export async function completePayment(id: string, callbackData?: Record<string, 
     }
 
     const existingSub = await tx.subscription.findFirst({
-      where: { userId: payment.userId, status: "active" },
+      where: { userId: payment.userId, status: "ACTIVE" },
     });
 
     if (existingSub) {
@@ -48,16 +48,16 @@ export async function completePayment(id: string, callbackData?: Record<string, 
       });
       return tx.payment.update({
         where: { id },
-        data: { status: "completed", subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
+        data: { status: "COMPLETED", subscriptionId: updatedSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
       });
     }
 
     const newSub = await tx.subscription.create({
-      data: { userId: payment.userId, tier: "kashif", priceEgp: 0, expiresAt: new Date(Date.now() + 30 * 86400000) },
+      data: { userId: payment.userId, tier: "KASHIF", priceEgp: 0, expiresAt: new Date(Date.now() + 30 * 86400000) },
     });
     return tx.payment.update({
       where: { id },
-      data: { status: "completed", subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
+      data: { status: "COMPLETED", subscriptionId: newSub.id, metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
     });
   });
 }
@@ -67,7 +67,7 @@ export async function failPayment(id: string, callbackData?: Record<string, unkn
   if (!payment) throw new NotFoundError("Payment");
   return prisma.payment.update({
     where: { id },
-    data: { status: "failed", metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
+    data: { status: "FAILED", metadata: { ...(payment.metadata as Record<string, unknown>), callback: callbackData } as Prisma.InputJsonValue },
   });
 }
 

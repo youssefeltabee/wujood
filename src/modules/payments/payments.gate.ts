@@ -10,7 +10,7 @@ export function assertTierPayment(payments: TierGatePayment[], targetTier: strin
   const latest = payments
     .filter(
       (p) =>
-        p.status === "completed" &&
+        p.status === "COMPLETED" &&
         (p.metadata as Record<string, unknown> | null)?.tier === targetTier,
     )
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];

@@ -31,13 +31,13 @@ export async function POST(req: NextRequest) {
 
     if (action === "cancel") {
       const sub = await prisma.subscription.findFirst({
-        where: { userId: user.userId, status: "active" },
+        where: { userId: user.userId, status: "ACTIVE" },
       });
       if (!sub) return NextResponse.json({ error: "No active subscription" }, { status: 404 });
 
       const updated = await prisma.subscription.update({
         where: { id: sub.id },
-        data: { status: "canceled", canceledAt: new Date() },
+        data: { status: "CANCELED", canceledAt: new Date() },
       });
 
       return NextResponse.json({ subscription: updated });
@@ -58,13 +58,13 @@ export async function POST(req: NextRequest) {
       }
 
       const current = await prisma.subscription.findFirst({
-        where: { userId: user.userId, status: "active" },
+        where: { userId: user.userId, status: "ACTIVE" },
       });
 
       if (current) {
         await prisma.subscription.update({
           where: { id: current.id },
-          data: { status: "canceled", canceledAt: new Date() },
+          data: { status: "CANCELED", canceledAt: new Date() },
         });
       }
 

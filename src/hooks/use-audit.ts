@@ -36,7 +36,7 @@ export function useAuditStatus(id: string | null) {
     enabled: !!id,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === "pending" || status === "processing" ? 2000 : false;
+      return status === "PENDING" || status === "RUNNING" ? 2000 : false;
     },
   });
 }

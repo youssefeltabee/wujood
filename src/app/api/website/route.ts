@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { verifyAccessToken } from "@/modules/auth/auth.service";
+import { handleApiError } from "@/lib/errors";
+import { slugify } from "@/utils/formatting";
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 63);
+function isDomainTakenError(err: unknown): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
 }
 
 export async function GET() {
@@ -22,8 +21,8 @@ export async function GET() {
       include: { pages: { orderBy: { order: "asc" } } },
     });
     return NextResponse.json({ website });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch website" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -39,7 +38,7 @@ export async function POST(req: NextRequest) {
     const domain = slugify(title);
     const existing = await prisma.website.findFirst({ where: { domain, deletedAt: null } });
     if (existing) {
-      return NextResponse.json({ error: "Domain slug already taken. Try a different title." }, { status: 409 });
+      return NextResponse.json({ error: "domain_taken" }, { status: 409 });
     }
 
     const website = await prisma.website.create({
@@ -47,8 +46,11 @@ export async function POST(req: NextRequest) {
       include: { pages: true },
     });
     return NextResponse.json({ website });
-  } catch {
-    return NextResponse.json({ error: "Failed to create website" }, { status: 500 });
+  } catch (err) {
+    if (isDomainTakenError(err)) {
+      return NextResponse.json({ error: "domain_taken" }, { status: 409 });
+    }
+    return handleApiError(err);
   }
 }
 
@@ -67,11 +69,12 @@ export async function PUT(req: NextRequest) {
     if (title !== undefined) data.title = title;
     if (description !== undefined) data.description = description;
     if (domain !== undefined) {
-      if (domain !== existing.domain) {
-        const taken = await prisma.website.findFirst({ where: { domain, deletedAt: null, id: { not: existing.id } } });
-        if (taken) return NextResponse.json({ error: "Domain slug already taken" }, { status: 409 });
+      const nextDomain = slugify(domain);
+      if (nextDomain !== existing.domain) {
+        const taken = await prisma.website.findFirst({ where: { domain: nextDomain, deletedAt: null, id: { not: existing.id } } });
+        if (taken) return NextResponse.json({ error: "domain_taken" }, { status: 409 });
       }
-      data.domain = domain;
+      data.domain = nextDomain;
     }
     if (colors !== undefined) data.colors = colors;
     if (isPublished !== undefined) data.isPublished = isPublished;
@@ -82,7 +85,10 @@ export async function PUT(req: NextRequest) {
       include: { pages: { orderBy: { order: "asc" } } },
     });
     return NextResponse.json({ website });
-  } catch {
-    return NextResponse.json({ error: "Failed to update website" }, { status: 500 });
+  } catch (err) {
+    if (isDomainTakenError(err)) {
+      return NextResponse.json({ error: "domain_taken" }, { status: 409 });
+    }
+    return handleApiError(err);
   }
 }

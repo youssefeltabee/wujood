@@ -24,7 +24,7 @@ export async function disconnectSocialAccount(id: string, userId: string) {
   return prisma.socialAccount.delete({ where: { id } });
 }
 
-export async function getSocialPosts(userId: string, filters?: { status?: string; accountId?: string }) {
+export async function getSocialPosts(userId: string, filters?: { status?: "DRAFT" | "SCHEDULED" | "POSTED"; accountId?: string }) {
   const where: Prisma.SocialPostWhereInput = { account: { userId } };
   if (filters?.status) where.status = filters.status;
   if (filters?.accountId) where.accountId = filters.accountId;
@@ -39,7 +39,7 @@ export async function createSocialPost(userId: string, data: { accountId: string
   const account = await prisma.socialAccount.findFirst({ where: { id: data.accountId, userId } });
   if (!account) throw new NotFoundError("Social account");
   const scheduled = data.scheduledAt ? new Date(data.scheduledAt) : null;
-  const status = scheduled && scheduled > new Date() ? "scheduled" : "draft";
+  const status = scheduled && scheduled > new Date() ? "SCHEDULED" : "DRAFT";
   return prisma.socialPost.create({
     data: { accountId: data.accountId, content: data.content, mediaUrls: data.mediaUrls || [], scheduledAt: scheduled, status },
     include: { account: { select: { platform: true, handle: true } } },

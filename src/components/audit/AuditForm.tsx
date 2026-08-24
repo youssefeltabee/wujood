@@ -27,7 +27,7 @@ export function AuditForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Audit failed"); setLoading(false); return; }
-      router.push(`/audit/${data.audit.id}`);
+      router.push(`/audit/${data.data.id}`);
     } catch {
       setError("Network error");
       setLoading(false);

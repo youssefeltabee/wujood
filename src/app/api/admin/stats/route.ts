@@ -8,13 +8,13 @@ export async function GET() {
     const user = await authenticateUser();
 
     const dbUser = await prisma.user.findUnique({ where: { id: user.userId }, select: { role: true } });
-    if (!dbUser || dbUser.role !== "admin") throw new ForbiddenError();
+    if (!dbUser || dbUser.role !== "ADMIN") throw new ForbiddenError();
 
     const [totalUsers, totalPayments, revenueAgg, activeSubscriptions, totalAudits] = await Promise.all([
       prisma.user.count(),
       prisma.payment.count(),
-      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: "completed" } }),
-      prisma.subscription.count({ where: { status: "active" } }),
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED" } }),
+      prisma.subscription.count({ where: { status: "ACTIVE" } }),
       prisma.audit.count(),
     ]);
 

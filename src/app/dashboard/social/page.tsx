@@ -227,9 +227,9 @@ export default function SocialPage() {
             <Select
               options={[
                 { value: "", label: "All" },
-                { value: "draft", label: "Drafts" },
-                { value: "scheduled", label: "Scheduled" },
-                { value: "published", label: "Published" },
+                { value: "DRAFT", label: "Drafts" },
+                { value: "SCHEDULED", label: "Scheduled" },
+                { value: "POSTED", label: "Posted" },
               ]}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -264,7 +264,7 @@ export default function SocialPage() {
                     </div>
                     <Button variant="danger" size="sm" onClick={() => deletePost(p.id)}>Delete</Button>
                   </div>
-                  {p.analytics && p.status === "published" && (
+                  {p.analytics && p.status === "POSTED" && (
                     <div className="flex gap-4 pt-2 border-t border-border-subtle text-xs text-text-secondary">
                       <span>Likes: {p.analytics.likes}</span>
                       <span>Shares: {p.analytics.shares}</span>
