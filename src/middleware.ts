@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAccessToken } from "@/lib/jwt";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname, hostname } = req.nextUrl;
 
   const subdomainMatch = hostname.match(/^(.+)\.wujood\.vercel\.app$/);
@@ -13,15 +14,16 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  const hasToken = !!req.cookies.get("token")?.value;
+  const token = req.cookies.get("token")?.value;
+  const hasValidToken = token ? (await verifyAccessToken(token)) !== null : false;
 
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/audit") || pathname.startsWith("/admin")) {
-    if (!hasToken) {
-      return NextResponse.redirect(new URL("/login", req.url));
+    if (!hasValidToken) {
+      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(pathname)}`, req.url));
     }
   }
 
-  if ((pathname === "/login" || pathname === "/register") && hasToken) {
+  if ((pathname === "/login" || pathname === "/register") && hasValidToken) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

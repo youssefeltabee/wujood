@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const token = cookieStore.get("token")?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const payload = verifyAccessToken(token);
+  const payload = await verifyAccessToken(token);
   if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { role: true } });

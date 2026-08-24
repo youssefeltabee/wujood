@@ -14,7 +14,7 @@ function slugify(text: string): string {
 export async function GET() {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const website = await prisma.website.findFirst({
@@ -30,7 +30,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { title, description } = await req.json();
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const existing = await prisma.website.findFirst({ where: { userId: user.userId, deletedAt: null } });

@@ -6,7 +6,7 @@ import { verifyAccessToken } from "@/modules/auth/auth.service";
 export async function GET() {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const templates = await prisma.whatsAppTemplate.findMany({ orderBy: { createdAt: "desc" } });
@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { name, category, content } = await req.json();
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await req.json();

@@ -6,7 +6,7 @@ import { verifyAccessToken } from "@/modules/auth/auth.service";
 export async function POST(req: NextRequest) {
   try {
     const token = (await cookies()).get("token")?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = token ? await verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { websiteId, slug, title, content } = await req.json();

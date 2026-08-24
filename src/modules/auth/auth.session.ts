@@ -1,16 +1,21 @@
+import { createHash } from "crypto";
 import { prisma } from "@/lib/db";
 import { signAccessToken, generateRefreshToken } from "./auth.service";
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
+function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
 export async function createSession(userId: string, email?: string): Promise<{ accessToken: string; refreshToken: string }> {
-  const accessToken = signAccessToken({ userId, email: email ?? "" });
+  const accessToken = await signAccessToken({ userId, email: email ?? "" });
   const refreshToken = generateRefreshToken();
 
   await prisma.refreshToken.create({
     data: {
       userId,
-      token: refreshToken,
+      token: hashToken(refreshToken),
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
     },
   });
@@ -21,25 +26,34 @@ export async function createSession(userId: string, email?: string): Promise<{ a
 export async function rotateRefreshToken(
   oldToken: string
 ): Promise<{ accessToken: string; refreshToken: string } | null> {
-  const result = await prisma.refreshToken.updateMany({
-    where: { token: oldToken, revokedAt: null, expiresAt: { gte: new Date() } },
-    data: { revokedAt: new Date() },
-  });
-  if (result.count === 0) return null;
+  const tokenHash = hashToken(oldToken);
 
   const existing = await prisma.refreshToken.findUnique({
-    where: { token: oldToken },
+    where: { token: tokenHash },
     include: { user: { select: { email: true } } },
   });
   if (!existing) return null;
 
-  const accessToken = signAccessToken({ userId: existing.userId, email: existing.user.email });
+  // Reuse of a revoked token means the family is compromised — kill everything.
+  if (existing.revokedAt) {
+    await revokeAllUserSessions(existing.userId);
+    return null;
+  }
+
+  if (existing.expiresAt < new Date()) return null;
+
+  await prisma.refreshToken.updateMany({
+    where: { token: tokenHash, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+
+  const accessToken = await signAccessToken({ userId: existing.userId, email: existing.user.email });
   const refreshToken = generateRefreshToken();
 
   await prisma.refreshToken.create({
     data: {
       userId: existing.userId,
-      token: refreshToken,
+      token: hashToken(refreshToken),
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
     },
   });
@@ -49,7 +63,7 @@ export async function rotateRefreshToken(
 
 export async function revokeRefreshToken(token: string): Promise<void> {
   await prisma.refreshToken.updateMany({
-    where: { token, revokedAt: null },
+    where: { token: hashToken(token), revokedAt: null },
     data: { revokedAt: new Date() },
   });
 }

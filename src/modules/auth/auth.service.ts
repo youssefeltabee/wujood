@@ -1,14 +1,11 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { getJwtSecret, signAccessToken, verifyAccessToken } from "@/lib/jwt";
 
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("JWT_SECRET environment variable is required");
-  return secret;
-}
+// M-7 guard: fail fast at startup when JWT_SECRET is missing or weak.
+getJwtSecret();
 
-const ACCESS_TOKEN_EXPIRY = "15m";
+export { getJwtSecret, signAccessToken, verifyAccessToken };
 
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
@@ -16,18 +13,6 @@ export function hashPassword(password: string): Promise<string> {
 
 export function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
-}
-
-export function signAccessToken(payload: { userId: string; email: string }): string {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY });
-}
-
-export function verifyAccessToken(token: string): { userId: string; email: string } | null {
-  try {
-    return jwt.verify(token, getJwtSecret()) as { userId: string; email: string };
-  } catch {
-    return null;
-  }
 }
 
 export function generateRefreshToken(): string {
