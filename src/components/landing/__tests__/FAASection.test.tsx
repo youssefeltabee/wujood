@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { FAASection } from "../FAASection";
 
 vi.mock("@/components/ui/ScrollReveal", () => ({
-  RevealSection: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div>,
+  RevealSection: ({ children, className, ...props }: React.ComponentProps<"div">) => <div className={className} {...props}>{children}</div>,
 }));
 vi.mock("@/lib/i18n", () => ({
   useLocale: () => ({

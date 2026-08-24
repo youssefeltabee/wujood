@@ -74,10 +74,14 @@ describe("HowItWorks", () => {
     });
   });
 
-  it("renders border-accent-gold decorative line per step", () => {
+  it("renders gold-accented number tile per step", () => {
     const { container } = render(<HowItWorks />);
-    const borders = container.querySelectorAll(".border-l-2");
-    expect(borders.length).toBe(3);
+    const tiles = container.querySelectorAll(".rounded-2xl");
+    expect(tiles.length).toBe(3);
+    tiles.forEach((tile) => {
+      expect(tile.className).toContain("border-accent-gold/20");
+      expect(tile.className).toContain("bg-accent-gold/10");
+    });
   });
 
   it("has two-column grid layout on desktop", () => {

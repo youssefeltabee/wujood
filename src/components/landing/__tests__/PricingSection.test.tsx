@@ -55,11 +55,12 @@ describe("PricingSection", () => {
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });
 
-  it("shows See Details on non-popular tiers with correct links", () => {
+  it("shows See Details buttons on non-popular tiers", () => {
     render(<PricingSection />);
     const details = screen.getAllByText("See Details");
     expect(details).toHaveLength(2);
-    details.forEach((d) => expect(d.closest("a")).toHaveAttribute("href", "/register"));
+    // Non-popular tiers open the details dialog via button, popular tier links /register directly
+    details.forEach((d) => expect(d.closest("button")).toBeInTheDocument());
   });
 
   it("renders section heading and description", () => {

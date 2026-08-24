@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ProblemSection } from "../ProblemSection";
 
-vi.mock("@/components/ui/ScrollReveal", () => ({ RevealSection: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div> }));
+vi.mock("@/components/ui/ScrollReveal", () => ({ RevealSection: ({ children, className, ...props }: React.ComponentProps<"div">) => <div className={className} {...props}>{children}</div> }));
 vi.mock("@/lib/i18n", () => ({
   useLocale: () => ({
     locale: "en", setLocale: vi.fn(), dir: "ltr",
@@ -81,8 +81,10 @@ describe("ProblemSection", () => {
 
   it("renders the gold stat card with 80%", () => {
     const { container } = render(<ProblemSection />);
-    const goldCard = container.querySelector(".bg-accent-gold");
+    // Card uses a gold gradient overlay, not a solid bg-accent-gold
+    const goldCard = container.querySelector(".rounded-3xl");
     expect(goldCard).toBeInTheDocument();
+    expect(goldCard!.querySelector(".bg-gradient-to-br")?.className).toContain("from-accent-gold");
     expect(goldCard!.querySelector(".text-8xl")?.textContent).toContain("80%");
   });
 });

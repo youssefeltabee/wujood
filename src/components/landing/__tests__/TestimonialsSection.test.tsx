@@ -73,10 +73,10 @@ describe("TestimonialsSection", () => {
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });
 
-  it("renders carousel with 5 slides", () => {
+  it("renders carousel with all 7 testimonial slides", () => {
     render(<TestimonialsSection />);
     expect(screen.getByTestId("carousel")).toBeInTheDocument();
-    expect(screen.getAllByTestId("carousel-slide")).toHaveLength(5);
+    expect(screen.getAllByTestId("carousel-slide")).toHaveLength(7);
   });
 
   it("renders GeometricPattern decoration", () => {
@@ -84,9 +84,9 @@ describe("TestimonialsSection", () => {
     expect(screen.getByTestId("geo-pattern")).toBeInTheDocument();
   });
 
-  it("renders 25 stars across all testimonials", () => {
+  it("renders 35 stars across all testimonials", () => {
     const { container } = render(<TestimonialsSection />);
     const stars = container.querySelectorAll(".fill-accent-gold");
-    expect(stars.length).toBe(25); // 5 cards x 5 stars
+    expect(stars.length).toBe(35); // 7 cards x 5 stars
   });
 });

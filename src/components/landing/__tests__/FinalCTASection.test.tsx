@@ -44,10 +44,11 @@ describe("FinalCTASection", () => {
     expect(screen.getByTestId("reveal")).toBeInTheDocument();
   });
 
-  it("renders gold accent divider line", () => {
+  it("renders gold accent glow orb", () => {
     const { container } = render(<FinalCTASection />);
-    const divider = container.querySelector(".h-px");
-    expect(divider).toHaveClass("bg-accent-gold/20");
+    const orb = container.querySelector(".rounded-full.blur-3xl");
+    expect(orb).toBeInTheDocument();
+    expect(orb!.className).toContain("bg-accent-gold/5");
   });
 
   it("has correct responsive padding classes", () => {
@@ -65,9 +66,11 @@ describe("FinalCTASection", () => {
     expect(maxW).toHaveClass("text-center");
   });
 
-  it("renders section with correct background", () => {
+  it("renders section with animated gradient background", () => {
     const { container } = render(<FinalCTASection />);
     const section = container.querySelector("section");
-    expect(section).toHaveClass("bg-bg-elevated");
+    expect(section).toHaveClass("relative");
+    expect(section).toHaveClass("overflow-hidden");
+    expect(section!.querySelector(".animated-gradient-bg")).toBeInTheDocument();
   });
 });

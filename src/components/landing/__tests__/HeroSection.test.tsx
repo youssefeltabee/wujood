@@ -24,9 +24,10 @@ describe("HeroSection", () => {
   });
 
   it("renders the description paragraph", () => {
-    render(<HeroSection />);
-    expect(screen.getByText(/If your website is outdated or your social media went quiet/)).toBeInTheDocument();
-    expect(screen.getByText((c) => c.includes("1,250 EGP"))).toBeInTheDocument();
+    const { container } = render(<HeroSection />);
+    const p = screen.getByText(/If your website is outdated or your social media went quiet/);
+    expect(p).toHaveClass("text-text-secondary");
+    expect(container.querySelector("p.animate-rise-3")).toBeInTheDocument();
   });
 
   it("renders feature badges", () => {
@@ -35,13 +36,12 @@ describe("HeroSection", () => {
     expect(screen.getByText("WhatsApp Included")).toBeInTheDocument();
   });
 
-  it("renders Login and CTA links with correct hrefs", () => {
-    render(<HeroSection />);
-    const login = screen.getByText("Login");
-    expect(login.closest("a")).toHaveAttribute("href", "/login");
-
-    const cta = screen.getByText("Start Now");
-    expect(cta.closest("a")).toHaveAttribute("href", "/register");
+  it("renders AuditForm within max-width container", () => {
+    const { container } = render(<HeroSection />);
+    // Hero's conversion path is the embedded AuditForm, not Login/CTA links (those live in Navigation)
+    const wrapper = container.querySelector(".max-w-md");
+    expect(wrapper).not.toBeNull();
+    expect(wrapper!.querySelector('[data-testid="audit-form"]')).toBeInTheDocument();
   });
 
   it("renders all three feature check items", () => {
@@ -56,9 +56,11 @@ describe("HeroSection", () => {
     expect(screen.getByTestId("audit-form")).toBeInTheDocument();
   });
 
-  it("renders Logo", () => {
-    render(<HeroSection />);
-    expect(screen.getByTestId("logo")).toBeInTheDocument();
+  it("renders desktop orb glow rings", () => {
+    const { container } = render(<HeroSection />);
+    // Logo lives in Navigation; hero decorates the ScoreOrb with pulse/spin rings
+    expect(container.querySelector(".animate-pulse-ring")).toBeInTheDocument();
+    expect(container.querySelector(".animate-spin-slow")).toBeInTheDocument();
   });
 
   it("renders ScoreOrb inside ThreeScene for desktop", () => {

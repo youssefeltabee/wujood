@@ -94,18 +94,18 @@ describe("FooterSection", () => {
 
   it("renders bottom border separator above copyright", () => {
     const { container } = render(<FooterSection />);
-    const separator = container.querySelector(".border-t");
-    // Should have at least one border-t (there are two: footer border-t and bottom separator border-t)
+    // Only one border-t exists (above copyright); the gold hairline at the top is an h-px gradient div
     const separators = container.querySelectorAll(".border-t");
-    expect(separators.length).toBeGreaterThanOrEqual(2);
+    expect(separators.length).toBe(1);
+    expect(separators[0]).toHaveClass("border-border-subtle");
   });
 
   it("has footer element", () => {
     const { container } = render(<FooterSection />);
     const footer = container.querySelector("footer");
     expect(footer).toBeInTheDocument();
-    expect(footer).toHaveClass("border-t");
-    expect(footer).toHaveClass("border-accent-gold/20");
+    expect(footer).toHaveClass("bg-bg-primary");
+    expect(footer!.querySelector(".h-px")?.className).toContain("via-accent-gold/40");
   });
 
   it("renders space-y-3 list for quick links", () => {

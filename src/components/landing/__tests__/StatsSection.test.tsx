@@ -39,25 +39,28 @@ describe("StatsSection", () => {
 
   it("styles second stat card with elevated background", () => {
     const { container } = render(<StatsSection />);
-    const elevated = container.querySelector(".bg-bg-elevated");
-    expect(elevated).toBeInTheDocument();
+    // Middle cell gets a translucent white wash, not bg-bg-elevated
+    const grid = container.querySelector(".grid");
+    const cards = grid ? Array.from(grid.children) : [];
+    expect(cards).toHaveLength(3);
+    // Exact token match — every cell carries the hover: variant of the same class
+    expect(cards[1].className.split(" ")).toContain("bg-white/[0.02]");
+    expect(cards[0].className.split(" ")).not.toContain("bg-white/[0.02]");
+    expect(cards[2].className.split(" ")).not.toContain("bg-white/[0.02]");
   });
 
-  it("renders with border and rounded corners on outer card", () => {
+  it("renders outer card with glass and gold glow styling", () => {
     const { container } = render(<StatsSection />);
     const outerCard = container.querySelector(".rounded-3xl");
-    expect(outerCard).toHaveClass("border");
-    expect(outerCard).toHaveClass("border-border-subtle");
+    expect(outerCard).toHaveClass("glass");
+    expect(outerCard).toHaveClass("glow-gold");
   });
 
-  it("animates stat values from 0 to target with fake timers", () => {
-    // AnimatedStat starts at 0, animates to target
+  it("renders three animated stat values", () => {
+    // Each AnimatedStat renders a gradient-text span; count starts at 0
     const { container } = render(<StatsSection />);
-    const statNumbers = container.querySelectorAll(".text-8xl");
-    // With visible=true on mount, animation starts immediately via setInterval
-    // Each AnimatedStat's initial rendered count is 0 before first interval fires
+    const statNumbers = container.querySelectorAll("span.gradient-text");
     expect(statNumbers.length).toBe(3);
-    // The count updates via setInterval every 16ms over 1500ms
   });
 
   it("renders section within a z-index context", () => {
@@ -69,11 +72,11 @@ describe("StatsSection", () => {
 
   it("renders stat values with large bold text styling", () => {
     const { container } = render(<StatsSection />);
-    const values = container.querySelectorAll(".text-8xl");
+    const values = container.querySelectorAll("span.gradient-text");
     expect(values.length).toBe(3);
     values.forEach((v) => {
       expect(v).toHaveClass("font-bold");
-      expect(v).toHaveClass("text-accent-gold");
+      expect(v.className).toContain("md:text-7xl");
     });
   });
 
