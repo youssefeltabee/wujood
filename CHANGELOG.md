@@ -1,5 +1,36 @@
 # Changelog
 
+## v3.0.0 — Security Closure & Launch Polish (2026-08-24)
+
+### Security
+
+- **Paid-tier gate**: subscription tier changes now require a completed Fawry payment for the target tier within the last 35 days; otherwise `402 payment_required`.
+- **SSRF hardening**: audit scanner resolves each URL once and pins the connection to the first-resolved IP via undici, rejecting private ranges at connect time; response bodies capped.
+- **Refresh tokens hashed**: only SHA-256 hashes are stored; rotation re-hashes on lookup; presenting a revoked token (reuse attack) revokes every session in the family.
+- **JWT stack unified on jose** (`jsonwebtoken` removed): HS256 sign/verify everywhere, including Edge middleware route protection.
+- **Rate-limit profiles honored** under Upstash Redis: per-call interval/max build distinct sliding-window limiters (in-memory fallback without Upstash).
+- **WhatsApp abuse controls**: 50 msgs/user/hour, E.164 recipient validation, live Twilio sends only when configured.
+- **Chat abuse controls**: 10 msgs/user/min, messages capped at 2000 chars, stored history truncated before OpenAI calls.
+- **Startup env validation**: `src/lib/env.ts` — single edge-safe zod source validating JWT_SECRET (≥32 chars, placeholder words rejected), DATABASE_URL presence, TOKEN_ENCRYPTION_KEY when the social module is used.
+
+### Schema
+
+- Prisma enums formalized (`Role`, `Tier`, `SubscriptionStatus`, `PaymentStatus`, `PaymentProvider`, `AuditStatus`, `SocialPostStatus`); `Audit.status` migrated to the `AuditStatus` enum with a PENDING→COMPLETED/FAILED lifecycle enforced end-to-end.
+- Ownership + integrity: WhatsApp templates scoped to their owner user, website domain uniqueness, soft-delete-aware indexes (`[domain, deletedAt]`), conversation/audit status indexes.
+- db-push workflow: run `npx prisma db push`, then apply `prisma/normalize-status.sql` once when restoring a pre-v3 database.
+
+### Ops
+
+- Nightly cleanup cron (`vercel.json`, 03:00 UTC daily) hitting `/api/jobs/cleanup`: deletes expired refresh tokens and flips expired ACTIVE subscriptions to EXPIRED. Authenticated by QStash signature or `CRON_SECRET` bearer token.
+- `.env.example` completed: every variable the code reads is listed with its failure mode documented.
+
+### Breaking changes
+
+- `POST /api/subscriptions` change-tier requires a completed payment — returns `402 { error: "payment_required" }` otherwise.
+- WhatsApp mock mode is opt-in: outbound sends hit live Twilio unless `WA_MOCK=true`.
+- `jsonwebtoken` dependency removed — all JWT operations use `jose`; tokens signed before this release must be reissued.
+- Weak/placeholder `JWT_SECRET` values (<32 chars or containing "change"/"placeholder"/"your-secret"/"secret-key") abort startup.
+
 ## v2.0.0 — Production-Grade UI System + Clean Architecture
 
 ### UI Component System (12 Primitives)
