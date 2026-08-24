@@ -21,13 +21,23 @@ function memoryRateLimit(key: string, limit: number, windowMs: number) {
   return { success: true, remaining: limit - entry.count, allowed: true };
 }
 
-let ratelimit: Ratelimit | null = null;
-if (UPSTASH_URL && UPSTASH_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(10, "10 s"),
-    analytics: true,
-  });
+const redis = UPSTASH_URL && UPSTASH_TOKEN ? Redis.fromEnv() : null;
+
+// ponytail: per-profile Ratelimit cache — unbounded only if callers pass ever-new option combos; bounded set in practice
+const limiters = new Map<string, Ratelimit>();
+
+function getLimiter(redis: Redis, maxRequests: number, intervalMs: number): Ratelimit {
+  const cacheKey = `${maxRequests}:${intervalMs}`;
+  let rl = limiters.get(cacheKey);
+  if (!rl) {
+    rl = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(maxRequests, `${intervalMs} ms`),
+      analytics: true,
+    });
+    limiters.set(cacheKey, rl);
+  }
+  return rl;
 }
 
 type RateLimitOptions = { interval?: number; maxRequests?: number };
@@ -36,8 +46,8 @@ export async function rateLimit(key: string, opts?: RateLimitOptions | number) {
   const limit = typeof opts === "number" ? opts : opts?.maxRequests ?? 10;
   const windowMs = typeof opts === "object" ? (opts.interval ?? 10_000) : 10_000;
 
-  if (ratelimit) {
-    const result = await ratelimit.limit(key);
+  if (redis) {
+    const result = await getLimiter(redis, limit, windowMs).limit(key);
     return { success: result.success, remaining: result.remaining, allowed: result.success };
   }
   return memoryRateLimit(key, limit, windowMs);
