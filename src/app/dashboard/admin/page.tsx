@@ -1,17 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Badge, Tabs, TabPanel, Spinner, useToast } from "@/components/ui";
+import { Card, Badge, Tabs, TabPanel, Spinner } from "@/components/ui";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
 
+interface AdminUser {
+  id: string;
+  email: string;
+  name?: string | null;
+  companyName?: string | null;
+  role: string;
+  createdAt: string;
+}
+
+interface AdminPayment {
+  id: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  user?: { email?: string | null } | null;
+}
+
+interface AdminStats {
+  totalUsers: number;
+  totalPayments: number;
+  totalRevenue: number;
+  activeSubscriptions: number;
+  totalAudits: number;
+}
+
 export default function AdminPage() {
-  const { toast } = useToast();
   const [checking, setChecking] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("stats");
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [payments, setPayments] = useState<AdminPayment[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState({ users: true, payments: true, stats: true });
 
   useEffect(() => {
@@ -51,8 +76,6 @@ export default function AdminPage() {
       </div>
     );
   }
-
-  const [activeTab, setActiveTab] = useState("stats");
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
@@ -110,7 +133,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u: any) => (
+                {users.map((u) => (
                   <tr key={u.id} className="border-b border-border-subtle/50">
                     <td className="py-3 pr-4 text-text-primary">{u.email}</td>
                     <td className="py-3 pr-4 text-text-secondary">{u.name || "—"}</td>
@@ -142,7 +165,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p: any) => (
+                {payments.map((p) => (
                   <tr key={p.id} className="border-b border-border-subtle/50">
                     <td className="py-3 pr-4 text-text-primary">{p.user?.email || "—"}</td>
                     <td className="py-3 pr-4 text-text-primary">EGP {Number(p.amount).toLocaleString()}</td>

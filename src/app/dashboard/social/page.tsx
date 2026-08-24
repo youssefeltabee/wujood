@@ -67,8 +67,18 @@ export default function SocialPage() {
   }, [statusFilter]);
 
   useEffect(() => {
-    Promise.all([fetchAccounts(), fetchPosts()]).finally(() => setLoading(false));
-  }, [fetchAccounts, fetchPosts]);
+    // ponytail: mount/filter fetch inlined; setState lives in promise callbacks, not the effect body
+    const params = new URLSearchParams();
+    if (statusFilter) params.set("status", statusFilter);
+    void Promise.all([
+      fetch("/api/social").then(async (res) => {
+        if (res.ok) { const data = await res.json(); setAccounts(data.accounts); }
+      }),
+      fetch(`/api/social/posts?${params}`).then(async (res) => {
+        if (res.ok) { const data = await res.json(); setPosts(data.posts); }
+      }),
+    ]).finally(() => setLoading(false));
+  }, [statusFilter]);
 
   async function addAccount() {
     if (!platform) return;

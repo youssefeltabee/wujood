@@ -163,7 +163,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("wujood-locale") as Locale | null;
-    if (stored === "en" || stored === "ar") setLocaleState(stored);
+    if (stored === "en" || stored === "ar") {
+      // ponytail: deferred out of the sync effect body; same-tick restore, SSR-safe (no hydration mismatch)
+      queueMicrotask(() => setLocaleState(stored));
+    }
   }, []);
 
   const setLocale = useCallback((l: Locale) => {

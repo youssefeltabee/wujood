@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { NotFoundError, ConflictError } from "@/lib/errors";
 
 export async function getSocialAccounts(userId: string) {
@@ -24,11 +25,11 @@ export async function disconnectSocialAccount(id: string, userId: string) {
 }
 
 export async function getSocialPosts(userId: string, filters?: { status?: string; accountId?: string }) {
-  const where: Record<string, unknown> = { account: { userId } };
+  const where: Prisma.SocialPostWhereInput = { account: { userId } };
   if (filters?.status) where.status = filters.status;
   if (filters?.accountId) where.accountId = filters.accountId;
   return prisma.socialPost.findMany({
-    where: where as any,
+    where,
     include: { account: { select: { platform: true, handle: true } }, analytics: true },
     orderBy: { scheduledAt: "desc" },
   });

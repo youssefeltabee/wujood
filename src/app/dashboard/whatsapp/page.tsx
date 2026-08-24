@@ -32,7 +32,14 @@ export default function WhatsAppPage() {
     if (res.ok) { const d = await res.json(); setTemplates(d.templates); }
   }, []);
 
-  useEffect(() => { fetchTemplates().finally(() => setLoading(false)); }, [fetchTemplates]);
+  useEffect(() => {
+    // ponytail: mount fetch inlined; setState lives in promise callbacks, not the effect body
+    fetch("/api/whatsapp/templates")
+      .then(async (res) => {
+        if (res.ok) { const d = await res.json(); setTemplates(d.templates); }
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   async function createTemplate() {
     if (!name || !content) return;

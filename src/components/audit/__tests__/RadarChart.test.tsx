@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { RadarChart } from "../RadarChart";
 
 // Mock recharts entirely to avoid transitive dep issues with reselect ESM
+type ChartMockProps = { children?: React.ReactNode; dataKey?: string; data?: { category: string; score: number }[] };
+
 vi.mock("recharts", () => ({
   ResponsiveContainer: ({
     children,
@@ -21,13 +23,13 @@ vi.mock("recharts", () => ({
       {children}
     </div>
   ),
-  RadarChart: ({ children, data }: any) => (
+  RadarChart: ({ children, data }: ChartMockProps) => (
     <svg data-testid="radar-chart" data-data-length={data?.length}>
       {children}
     </svg>
   ),
   PolarGrid: () => <polygon data-testid="polar-grid" />,
-  PolarAngleAxis: ({ dataKey }: any) => (
+  PolarAngleAxis: ({ dataKey }: ChartMockProps) => (
     <g data-testid="polar-angle-axis" data-datakey={dataKey}>
       <text>SEO</text>
       <text>Performance</text>
@@ -37,7 +39,7 @@ vi.mock("recharts", () => ({
     </g>
   ),
   PolarRadiusAxis: () => <line data-testid="polar-radius-axis" />,
-  Radar: ({ dataKey }: any) => (
+  Radar: ({ dataKey }: ChartMockProps) => (
     <path data-testid="radar-path" data-datakey={dataKey} />
   ),
   Tooltip: () => <g data-testid="tooltip" />,

@@ -34,18 +34,38 @@ export default function AuditPage() {
       })
       .then((d) => {
         if (!d) return;
-        const audit = d.audit;
+        const audit: Record<string, unknown> = d.audit;
         const categories: Record<string, number> = {};
         siteConfig.auditCategories.forEach((cat) => {
-          categories[cat.key] = (audit as any)[cat.key] || 0;
+          categories[cat.key] = (audit[cat.key] as number) || 0;
         });
         const total = Object.values(categories).reduce((a: number, b) => a + (b as number), 0);
         const level = siteConfig.ghostLevels.find((l) => total <= l.max) || siteConfig.ghostLevels[siteConfig.ghostLevels.length - 1];
-        setData({ id: audit.id, url: audit.url, totalScore: total, ghostLabel: level.label, categories });
+        setData({ id: audit.id as string, url: audit.url as string, totalScore: total, ghostLabel: level.label, categories });
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  const labels = useMemo(() => {
+    const m: Record<string, { en: string; ar: string }> = {};
+    siteConfig.auditCategories.forEach((c) => { m[c.key] = c.label; });
+    return m;
+  }, []);
+
+  const descriptions = useMemo(() => {
+    const m: Record<string, { en: string; ar: string }> = {};
+    siteConfig.auditCategories.forEach((c) => { m[c.key] = c.desc; });
+    return m;
+  }, []);
+
+  const chartData = useMemo(
+    () => !data ? [] : Object.entries(data.categories).map(([key, val]) => ({
+      category: siteConfig.auditCategories.find((c) => c.key === key)?.label.en || key,
+      score: val,
+    })),
+    [data]
+  );
 
   if (loading) return (
     <div className="max-w-4xl mx-auto px-6 py-16 text-center">
@@ -60,26 +80,6 @@ export default function AuditPage() {
       Audit not found.
     </div>
   );
-
-  const chartData = useMemo(
-    () => Object.entries(data.categories).map(([key, val]) => ({
-      category: siteConfig.auditCategories.find((c) => c.key === key)?.label.en || key,
-      score: val,
-    })),
-    [data.categories]
-  );
-
-  const labels = useMemo(() => {
-    const m: Record<string, { en: string; ar: string }> = {};
-    siteConfig.auditCategories.forEach((c) => { m[c.key] = c.label; });
-    return m;
-  }, []);
-
-  const descriptions = useMemo(() => {
-    const m: Record<string, { en: string; ar: string }> = {};
-    siteConfig.auditCategories.forEach((c) => { m[c.key] = c.desc; });
-    return m;
-  }, []);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">

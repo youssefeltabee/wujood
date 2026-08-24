@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
+  // ponytail: lazy init reads matchMedia once; nothing rendered depends on this pre-hydration, so no mismatch risk
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
     const onChange = () => setReduced(mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);

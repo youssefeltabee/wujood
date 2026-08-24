@@ -27,9 +27,12 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
+  // ponytail: react.dev "adjust state when props change" — closes the menu on route change without an effect
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <>

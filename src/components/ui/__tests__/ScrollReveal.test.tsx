@@ -21,7 +21,7 @@ beforeAll(() => {
     disconnect = mockDisconnect;
     takeRecords = () => [] as IntersectionObserverEntry[];
   }
-  (globalThis as any).IntersectionObserver = MockIntersectionObserver;
+  (globalThis as unknown as { IntersectionObserver: unknown }).IntersectionObserver = MockIntersectionObserver;
 });
 
 describe("RevealSection", () => {

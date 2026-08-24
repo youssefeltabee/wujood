@@ -39,7 +39,14 @@ export default function BlogDashboardPage() {
     if (res.ok) { const d = await res.json(); setPosts(d.posts); }
   }, []);
 
-  useEffect(() => { fetchPosts().finally(() => setLoading(false)); }, [fetchPosts]);
+  useEffect(() => {
+    // ponytail: mount fetch inlined; setState lives in promise callbacks, not the effect body
+    fetch("/api/blog")
+      .then(async (res) => {
+        if (res.ok) { const d = await res.json(); setPosts(d.posts); }
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   async function createPost() {
     if (!title || !slug || !content) return;

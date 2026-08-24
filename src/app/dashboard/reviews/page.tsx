@@ -81,7 +81,7 @@ export default function ReviewsPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/reviews");
-      if (res.status === 401) { window.location.href = "/login"; return; }
+      if (res.status === 401) { window.location.assign("/login"); return; }
       const data = await res.json();
       setReviews(data.reviews || []);
     } catch {
@@ -91,7 +91,18 @@ export default function ReviewsPage() {
     }
   }
 
-  useEffect(() => { fetchReviews(); }, []);
+  useEffect(() => {
+    // ponytail: mount fetch inlined so setState lives in promise callbacks; toast is intentionally non-reactive
+    fetch("/api/reviews")
+      .then(async (res) => {
+        if (res.status === 401) { window.location.assign("/login"); return; }
+        const data = await res.json();
+        setReviews(data.reviews || []);
+      })
+      .catch(() => toast("Failed to load reviews", "error"))
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function resetForm() {
     setAuthorName("");

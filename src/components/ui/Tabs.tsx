@@ -25,7 +25,7 @@ interface TabsProps {
   syncHash?: boolean;
 }
 
-function Tabs({ variant = "underline", activeTab, onTabChange, tabs, className, syncHash }: TabsProps) {
+function Tabs({ variant = "underline", activeTab, onTabChange, tabs, className }: TabsProps) {
   const style = variants[variant];
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -87,13 +87,12 @@ function TabPanel({ value, activeTab, children, className }: TabPanelProps) {
   const [visible, setVisible] = useState(value === activeTab);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ponytail: re-arm during render (react.dev "adjust state when props change"); effect below handles the delayed hide
+  if (value === activeTab && !visible) setVisible(true);
+
   useEffect(() => {
-    if (value === activeTab) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      setVisible(true);
-    } else {
-      timerRef.current = setTimeout(() => setVisible(false), 150);
-    }
+    if (value === activeTab) return;
+    timerRef.current = setTimeout(() => setVisible(false), 150);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [value, activeTab]);
 
