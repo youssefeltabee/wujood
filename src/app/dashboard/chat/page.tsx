@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { Card, Button, Input, Spinner } from "@/components/ui";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button, Spinner } from "@/components/ui";
+import { useConversations, useConversation } from "@/hooks/use-chat";
 
 interface Contact {
   name?: string;
@@ -17,13 +19,27 @@ interface Conversation {
 }
 
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [optimisticMsg, setOptimisticMsg] = useState<{ role: string; content: string } | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [loadingList, setLoadingList] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const conversationsQuery = useConversations();
+  const conversations: Conversation[] = conversationsQuery.data?.conversations ?? [];
+  const loadingList = conversationsQuery.isLoading;
+
+  // ponytail: optimistic user bubble kept local; server thread lives in the query cache
+  const threadQuery = useConversation(activeId);
+  const baseMessages: { role: string; content: string }[] = useMemo(
+    () => (activeId ? threadQuery.data?.conversation?.messages : null) ?? [],
+    [activeId, threadQuery.data]
+  );
+  const messages = useMemo(
+    () => (optimisticMsg ? [...baseMessages, optimisticMsg] : baseMessages),
+    [baseMessages, optimisticMsg]
+  );
 
   const scrollDown = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,30 +47,14 @@ export default function ChatPage() {
 
   useEffect(() => { scrollDown(); }, [messages, scrollDown]);
 
-  useEffect(() => {
-    fetch("/api/chat")
-      .then(async (r) => {
-        if (!r.ok) { if (r.status === 401) window.location.href = "/login"; return; }
-        return r.json();
-      })
-      .then((d) => { if (d) setConversations(d.conversations || []); setLoadingList(false); })
-      .catch(() => setLoadingList(false));
-  }, []);
-
-  const openConversation = async (id: string) => {
+  const openConversation = (id: string) => {
     setActiveId(id);
-    try {
-      const res = await fetch(`/api/chat/${id}`);
-      const d = await res.json();
-      setMessages(d.conversation?.messages || []);
-    } catch {
-      setMessages([]);
-    }
+    setOptimisticMsg(null);
   };
 
   const newConversation = () => {
     setActiveId(null);
-    setMessages([]);
+    setOptimisticMsg(null);
   };
 
   const sendMessage = async () => {
@@ -62,8 +62,7 @@ export default function ChatPage() {
     if (!text || sending) return;
     setInput("");
 
-    const optimistic: { role: string; content: string }[] = [...messages, { role: "user", content: text }];
-    setMessages(optimistic);
+    setOptimisticMsg({ role: "user", content: text });
     setSending(true);
 
     try {
@@ -75,18 +74,13 @@ export default function ChatPage() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
 
-      setMessages(d.conversation?.messages || []);
       setActiveId(d.conversation?.id || null);
-
-      setConversations((prev) => {
-        const updated = d.conversation;
-        const exists = prev.find((c) => c.id === updated.id);
-        if (exists) return prev.map((c) => (c.id === updated.id ? updated : c));
-        return [updated, ...prev];
-      });
+      queryClient.setQueryData(["conversation", d.conversation.id], { conversation: d.conversation });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
     } catch {
-      setMessages((prev) => prev.slice(0, -1));
+      // rollback optimistic bubble on failure
     } finally {
+      setOptimisticMsg(null);
       setSending(false);
     }
   };

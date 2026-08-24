@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, Badge, Button, Input, Select, Spinner, useToast, Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui";
+import { useReviews, useCreateReview, useUpdateReview, useDeleteReview } from "@/hooks/use-reviews";
 
 interface Review {
   id: string;
@@ -67,8 +68,12 @@ function ReviewCard({ review, onToggle, onDelete }: { review: Review; onToggle: 
 
 export default function ReviewsPage() {
   const { toast } = useToast();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loading } = useReviews();
+  const reviews: Review[] = data?.reviews ?? [];
+  const createReview = useCreateReview();
+  const updateReview = useUpdateReview();
+  const deleteReview = useDeleteReview();
+
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -76,33 +81,6 @@ export default function ReviewsPage() {
   const [content, setContent] = useState("");
   const [rating, setRating] = useState("5");
   const [source, setSource] = useState("");
-
-  async function fetchReviews() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/reviews");
-      if (res.status === 401) { window.location.assign("/login"); return; }
-      const data = await res.json();
-      setReviews(data.reviews || []);
-    } catch {
-      toast("Failed to load reviews", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    // ponytail: mount fetch inlined so setState lives in promise callbacks; toast is intentionally non-reactive
-    fetch("/api/reviews")
-      .then(async (res) => {
-        if (res.status === 401) { window.location.assign("/login"); return; }
-        const data = await res.json();
-        setReviews(data.reviews || []);
-      })
-      .catch(() => toast("Failed to load reviews", "error"))
-      .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   function resetForm() {
     setAuthorName("");
@@ -117,49 +95,36 @@ export default function ReviewsPage() {
       return;
     }
     setSaving(true);
-    try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ authorName, content, rating: Number(rating), source: source || null }),
-      });
-      if (!res.ok) throw new Error();
-      toast("Review created", "success");
-      setFormOpen(false);
-      resetForm();
-      fetchReviews();
-    } catch {
-      toast("Failed to create review", "error");
-    } finally {
-      setSaving(false);
-    }
+    createReview.mutate(
+      { authorName, content, rating: Number(rating), source: source || undefined },
+      {
+        onSuccess: () => {
+          toast("Review created", "success");
+          setFormOpen(false);
+          resetForm();
+        },
+        onError: () => toast("Failed to create review", "error"),
+        onSettled: () => setSaving(false),
+      }
+    );
   }
 
-  async function handleToggle(review: Review) {
-    try {
-      const res = await fetch(`/api/reviews/${review.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isApproved: !review.isApproved }),
-      });
-      if (!res.ok) throw new Error();
-      toast(review.isApproved ? "Review rejected" : "Review approved", "success");
-      fetchReviews();
-    } catch {
-      toast("Failed to update review", "error");
-    }
+  function handleToggle(review: Review) {
+    updateReview.mutate(
+      { id: review.id, isApproved: !review.isApproved },
+      {
+        onSuccess: () => toast(review.isApproved ? "Review rejected" : "Review approved", "success"),
+        onError: () => toast("Failed to update review", "error"),
+      }
+    );
   }
 
-  async function handleDelete(review: Review) {
+  function handleDelete(review: Review) {
     if (!confirm("Delete this review permanently?")) return;
-    try {
-      const res = await fetch(`/api/reviews/${review.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
-      toast("Review deleted", "success");
-      fetchReviews();
-    } catch {
-      toast("Failed to delete review", "error");
-    }
+    deleteReview.mutate(review.id, {
+      onSuccess: () => toast("Review deleted", "success"),
+      onError: () => toast("Failed to delete review", "error"),
+    });
   }
 
   return (

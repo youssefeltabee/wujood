@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { Card, Button, Input, Select, Badge, Spinner, useToast } from "@/components/ui";
+import {
+  useSocialAccounts,
+  useConnectSocialAccount,
+  useDisconnectSocialAccount,
+  useSocialPosts,
+  useCreateSocialPost,
+  useDeleteSocialPost,
+} from "@/hooks/use-social";
 
 interface SocialAccount {
   id: string;
@@ -38,9 +46,6 @@ const platforms = [
 
 export default function SocialPage() {
   const { toast } = useToast();
-  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
-  const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [platform, setPlatform] = useState("");
   const [handle, setHandle] = useState("");
   const [content, setContent] = useState("");
@@ -48,92 +53,55 @@ export default function SocialPage() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const fetchAccounts = useCallback(async () => {
-    const res = await fetch("/api/social");
-    if (res.ok) {
-      const data = await res.json();
-      setAccounts(data.accounts);
-    }
-  }, []);
+  const accountsQuery = useSocialAccounts();
+  const postsQuery = useSocialPosts(statusFilter ? { status: statusFilter } : undefined);
+  const connectAccount = useConnectSocialAccount();
+  const disconnectAccount = useDisconnectSocialAccount();
+  const createPostMutation = useCreateSocialPost();
+  const deletePostMutation = useDeleteSocialPost();
 
-  const fetchPosts = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (statusFilter) params.set("status", statusFilter);
-    const res = await fetch(`/api/social/posts?${params}`);
-    if (res.ok) {
-      const data = await res.json();
-      setPosts(data.posts);
-    }
-  }, [statusFilter]);
+  const accounts: SocialAccount[] = accountsQuery.data?.accounts ?? [];
+  const posts: SocialPost[] = postsQuery.data?.posts ?? [];
+  const loading = accountsQuery.isLoading || postsQuery.isLoading;
 
-  useEffect(() => {
-    // ponytail: mount/filter fetch inlined; setState lives in promise callbacks, not the effect body
-    const params = new URLSearchParams();
-    if (statusFilter) params.set("status", statusFilter);
-    void Promise.all([
-      fetch("/api/social").then(async (res) => {
-        if (res.ok) { const data = await res.json(); setAccounts(data.accounts); }
-      }),
-      fetch(`/api/social/posts?${params}`).then(async (res) => {
-        if (res.ok) { const data = await res.json(); setPosts(data.posts); }
-      }),
-    ]).finally(() => setLoading(false));
-  }, [statusFilter]);
-
-  async function addAccount() {
+  function addAccount() {
     if (!platform) return;
-    const res = await fetch("/api/social", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ platform, handle }),
+    connectAccount.mutate({ platform, handle }, {
+      onSuccess: () => {
+        toast("Account added", "success");
+        setPlatform("");
+        setHandle("");
+      },
+      onError: (err: Error) => toast(err.message || "Failed to add account", "error"),
     });
-    if (res.ok) {
-      toast("Account added", "success");
-      setPlatform("");
-      setHandle("");
-      await fetchAccounts();
-    } else {
-      const err = await res.json();
-      toast(err.error || "Failed to add account", "error");
-    }
   }
 
-  async function removeAccount(id: string) {
-    const res = await fetch(`/api/social/accounts/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      toast("Account removed", "success");
-      await fetchAccounts();
-    }
+  function removeAccount(id: string) {
+    disconnectAccount.mutate(id, {
+      onSuccess: () => toast("Account removed", "success"),
+    });
   }
 
-  async function createPost() {
+  function createPost() {
     if (!selectedAccount || !content) return;
-    const res = await fetch("/api/social/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accountId: selectedAccount,
-        content,
-        scheduledAt: scheduledAt || undefined,
-      }),
+    createPostMutation.mutate({
+      accountId: selectedAccount,
+      content,
+      scheduledAt: scheduledAt || undefined,
+    }, {
+      onSuccess: () => {
+        toast("Post created", "success");
+        setContent("");
+        setScheduledAt("");
+      },
+      onError: (err: Error) => toast(err.message || "Failed to create post", "error"),
     });
-    if (res.ok) {
-      toast("Post created", "success");
-      setContent("");
-      setScheduledAt("");
-      await fetchPosts();
-    } else {
-      const err = await res.json();
-      toast(err.error || "Failed to create post", "error");
-    }
   }
 
-  async function deletePost(id: string) {
-    const res = await fetch(`/api/social/posts/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      toast("Post deleted", "success");
-      await fetchPosts();
-    }
+  function deletePost(id: string) {
+    deletePostMutation.mutate(id, {
+      onSuccess: () => toast("Post deleted", "success"),
+    });
   }
 
   if (loading) {

@@ -1,6 +1,12 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// ponytail: server error text surfaces in page toasts, matching pre-migration behavior
+async function throwWithServerError(res: Response, fallback: string): Promise<never> {
+  const err = await res.json().catch(() => null);
+  throw new Error(err?.error || fallback);
+}
 
 // Accounts
 export function useSocialAccounts() {
@@ -23,7 +29,7 @@ export function useConnectSocialAccount() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to connect account");
+      if (!res.ok) return throwWithServerError(res, "Failed to connect account");
       return res.json();
     },
     onSuccess: () => {
@@ -59,6 +65,8 @@ export function useSocialPosts(filters?: { status?: string; accountId?: string }
       if (!res.ok) throw new Error("Failed to fetch posts");
       return res.json();
     },
+    // ponytail: keep previous list rendered while a filter change refetches, no full-page spinner flash
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -71,7 +79,7 @@ export function useCreateSocialPost() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create post");
+      if (!res.ok) return throwWithServerError(res, "Failed to create post");
       return res.json();
     },
     onSuccess: () => {

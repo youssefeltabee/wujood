@@ -48,7 +48,7 @@ export function useUpdateReview() {
   return useMutation({
     mutationFn: async ({ id, ...data }: { id: string; authorName?: string; content?: string; rating?: number; source?: string; isApproved?: boolean }) => {
       const res = await fetch(`/api/reviews/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });

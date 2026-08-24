@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, Badge, Skeleton, Button } from "@/components/ui";
+import { Card, Badge, Skeleton } from "@/components/ui";
 import { CatalogCheckout } from "@/components/catalog/CatalogCheckout";
+import { useCatalogItems } from "@/hooks/use-catalog";
 
 interface CatalogItem {
   id: string;
@@ -15,18 +15,8 @@ interface CatalogItem {
 }
 
 export default function CatalogPage() {
-  const [items, setItems] = useState<CatalogItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/catalog")
-      .then(async (r) => {
-        if (!r.ok) { if (r.status === 401) window.location.href = "/login"; return; }
-        return r.json();
-      })
-      .then((d) => { if (d) setItems(d.items || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useCatalogItems();
+  const items: CatalogItem[] = data?.items ?? [];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">

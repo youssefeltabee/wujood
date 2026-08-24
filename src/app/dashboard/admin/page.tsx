@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, Badge, Tabs, TabPanel, Spinner } from "@/components/ui";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -30,43 +31,37 @@ interface AdminStats {
   totalAudits: number;
 }
 
+async function fetchJson(url: string) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Request failed: ${url}`);
+  return res.json();
+}
+
 export default function AdminPage() {
-  const [checking, setChecking] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false);
   const [activeTab, setActiveTab] = useState("stats");
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [payments, setPayments] = useState<AdminPayment[]>([]);
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState({ users: true, payments: true, stats: true });
 
-  useEffect(() => {
-    fetch("/api/auth/me").then(async (r) => {
-      if (!r.ok) { setAccessDenied(true); setChecking(false); return; }
-      const data = await r.json();
-      if (data.user?.role !== "admin") { setAccessDenied(true); setChecking(false); return; }
-      setChecking(false);
-    });
-  }, []);
+  const meQuery = useQuery({ queryKey: ["me"], queryFn: () => fetchJson("/api/auth/me") });
+  const isAdmin = meQuery.data?.user?.role === "admin";
 
-  useEffect(() => {
-    if (checking || accessDenied) return;
-    fetch("/api/admin/users").then(async (r) => {
-      if (r.ok) { const d = await r.json(); setUsers(d.users); }
-      setLoading((p) => ({ ...p, users: false }));
-    }).catch(() => setLoading((p) => ({ ...p, users: false })));
-    fetch("/api/admin/payments?limit=50").then(async (r) => {
-      if (r.ok) { const d = await r.json(); setPayments(d.payments); }
-      setLoading((p) => ({ ...p, payments: false }));
-    }).catch(() => setLoading((p) => ({ ...p, payments: false })));
-    fetch("/api/admin/stats").then(async (r) => {
-      if (r.ok) { const d = await r.json(); setStats(d); }
-      setLoading((p) => ({ ...p, stats: false }));
-    }).catch(() => setLoading((p) => ({ ...p, stats: false })));
-  }, [checking, accessDenied]);
+  const usersQuery = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: () => fetchJson("/api/admin/users"),
+    enabled: isAdmin,
+  });
+  const paymentsQuery = useQuery({
+    queryKey: ["admin-payments"],
+    queryFn: () => fetchJson("/api/admin/payments?limit=50"),
+    enabled: isAdmin,
+  });
+  const statsQuery = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: () => fetchJson("/api/admin/stats"),
+    enabled: isAdmin,
+  });
 
-  if (checking) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+  if (meQuery.isLoading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
-  if (accessDenied) {
+  if (!isAdmin) {
     return (
       <div className="max-w-lg mx-auto px-6 py-20 text-center">
         <Card variant="elevated" padding="lg">
@@ -76,6 +71,10 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  const users: AdminUser[] = usersQuery.data?.users ?? [];
+  const payments: AdminPayment[] = paymentsQuery.data?.payments ?? [];
+  const stats: AdminStats | null = statsQuery.data ?? null;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
@@ -89,7 +88,7 @@ export default function AdminPage() {
       ]} />
 
       <TabPanel value="stats" activeTab={activeTab}>
-        {loading.stats ? (
+        {statsQuery.isLoading ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : stats ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -118,7 +117,7 @@ export default function AdminPage() {
       </TabPanel>
 
       <TabPanel value="users" activeTab={activeTab}>
-        {loading.users ? (
+        {usersQuery.isLoading ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : (
           <div className="overflow-x-auto">
@@ -151,7 +150,7 @@ export default function AdminPage() {
       </TabPanel>
 
       <TabPanel value="payments" activeTab={activeTab}>
-        {loading.payments ? (
+        {paymentsQuery.isLoading ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : (
           <div className="overflow-x-auto">

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, Badge, Skeleton, Button } from "@/components/ui";
+import { Card, Badge, Skeleton } from "@/components/ui";
 import { AuditForm } from "@/components/audit/AuditForm";
+import { useAudits } from "@/hooks/use-audit";
 
 interface Audit {
   id: string;
@@ -52,21 +52,8 @@ function scoreBg(s: number) {
 }
 
 export default function DashboardPage() {
-  const [audits, setAudits] = useState<Audit[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/audit")
-      .then(async (r) => {
-        if (!r.ok) {
-          if (r.status === 401) { window.location.href = "/login"; return; }
-          throw new Error("Failed to fetch");
-        }
-        return r.json();
-      })
-      .then((d) => { if (d) setAudits(d.audits || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useAudits();
+  const audits: Audit[] = data?.audits ?? [];
 
   const lastScore = audits.length > 0 ? audits[0].totalScore : null;
 
