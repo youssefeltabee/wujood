@@ -416,3 +416,187 @@ h1, h2, h3, h4, h5, h6 {
     @apply font-sans;
   }
 }
+
+/* ==========================================================================
+   v3 UI Pass — "Dark Luxe Cairo" Design-System Extension
+   Appended below the locked token/keyframe/class set. Do not move or merge.
+   ========================================================================== */
+
+@theme {
+  /* Layered depth */
+  --color-accent-gold-subtle: rgba(212, 168, 83, 0.08);
+  --color-bg-overlay: rgba(10, 10, 10, 0.7);
+
+  /* Gradient presets */
+  --gradient-gold-linear: linear-gradient(135deg, #d4a853 0%, #e8c06e 50%, #d4a853 100%);
+  --gradient-surface-rise: linear-gradient(to top, #0a0a0a 0%, #161616 100%);
+
+  /* Gold-tinted hover elevation */
+  --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(212, 168, 83, 0.12);
+
+  /* Spacing scale additions */
+  --spacing-xs: 0.5rem;
+  --spacing-lg: 2rem;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Utility layer (RTL-safe: logical properties / transforms only) ------ */
+
+.card-lux {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  transition:
+    box-shadow 0.3s var(--ease-out-expo),
+    transform 0.3s var(--ease-out-expo),
+    border-color 0.3s;
+}
+.card-lux:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: rgba(212, 168, 83, 0.2);
+}
+
+.glass-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-value {
+  font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* gap = RTL-safe hairline spacing, no margin-inline needed */
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-accent-gold);
+}
+.section-label::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.table-lux {
+  border-collapse: collapse;
+}
+.table-lux th {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.table-lux tbody tr {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.table-lux tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+.table-lux td {
+  padding-block: 0.75rem;
+}
+
+.focus-ring-gold:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.pattern-fade {
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+/* ---- Keyframes + animation companions ----------------------------------- */
+
+@keyframes count-flash {
+  0%, 100% { opacity: 1; letter-spacing: normal; }
+  35% { opacity: 0.55; letter-spacing: 0.04em; }
+}
+.animate-count-flash {
+  animation: count-flash 0.5s var(--ease-out-expo);
+}
+
+/* Skeleton sweep — reuses the existing `shimmer` keyframes above */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+.animate-stagger > * {
+  animation: rise-up 0.5s var(--ease-out-expo) both;
+}
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 360ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 420ms; }
+
+/* ---- Reduced motion ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob,
+  .animate-blob-2,
+  .shimmer,
+  .skeleton,
+  .animate-count-flash,
+  .animate-stagger > * {
+    animation: none;
+  }
+}
+
+/* ---- Micro-site theming contract -----------------------------------------
+   Tenant sites consume this scope to re-skin without touching app tokens.
+
+   Mapping from Website.colors JSON { primary, accent, bg, text }:
+     <section
+       className="site-shell"
+       style={{
+         "--site-primary": site.colors.primary,
+         "--site-accent":  site.colors.accent,
+         "--site-bg":      site.colors.bg,
+         "--site-text":    site.colors.text,
+       } as React.CSSProperties}
+     >
+   Unset vars fall through to the light-theme defaults below.
+   -------------------------------------------------------------------------- */
+
+:root {
+  --site-primary: #2563eb;
+  --site-accent: #0ea5e9;
+  --site-bg: #ffffff;
+  --site-text: #111827;
+}
+
+.site-shell {
+  background-color: var(--site-bg);
+  color: var(--site-text);
+}
