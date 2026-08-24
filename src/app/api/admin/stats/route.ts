@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { authenticateUser } from "@/lib/auth";
-import { ForbiddenError, handleApiError } from "@/lib/errors";
+import { requireAdmin } from "@/modules/admin/admin.guard";
+import { handleApiError } from "@/lib/errors";
 
 export async function GET() {
   try {
-    const user = await authenticateUser();
-
-    const dbUser = await prisma.user.findUnique({ where: { id: user.userId }, select: { role: true } });
-    if (!dbUser || dbUser.role !== "ADMIN") throw new ForbiddenError();
+    await requireAdmin();
 
     const [totalUsers, totalPayments, revenueAgg, activeSubscriptions, totalAudits] = await Promise.all([
       prisma.user.count(),

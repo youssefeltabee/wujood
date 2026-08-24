@@ -3,6 +3,7 @@ import { Receiver } from "@upstash/qstash";
 import { prisma } from "@/lib/db";
 import { computeScore } from "@/modules/audit/audit.scorer";
 import { generatePdf } from "@/modules/audit/audit.report";
+import { logger } from "@/lib/logger";
 
 const receiver = new Receiver({
   currentSigningKey: process.env.QSTASH_SIGNING_KEY!,
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
       data: { pdfUrl },
     });
   } catch (error) {
-    console.error(`PDF generation failed for audit ${auditId}:`, error);
+    logger.error(`PDF generation failed for audit ${auditId}`, { error: error instanceof Error ? error.message : String(error) });
   }
 
   return NextResponse.json({ success: true });

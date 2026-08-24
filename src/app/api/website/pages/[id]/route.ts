@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
-import { updatePostController, deletePostController } from "@/modules/blog/blog.controller";
+import { updatePageController, deletePageController } from "@/modules/website/website.controller";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function PUT(req: NextRequest, ctx: Ctx) {
-  return updatePostController(req, ctx);
+  return updatePageController(req, ctx);
 }
 
 export async function DELETE(req: NextRequest, ctx: Ctx) {
-  return deletePostController(req, ctx);
+  return deletePageController(req, ctx);
 }

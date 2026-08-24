@@ -22,6 +22,7 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/modules/auth/auth.service";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") return new Response(null, { status: 404 });
   const token = (await cookies()).get("token")?.value;
   const user = token ? await verifyAccessToken(token) : null;
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

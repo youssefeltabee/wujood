@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -74,6 +75,7 @@ export class InternalError extends AppError {
 
 export function handleApiError(error: unknown): NextResponse {
   const appError = AppError.from(error);
+  logger.error(appError.name, { message: appError.message, status: appError.statusCode });
   const body: Record<string, unknown> = {
     success: false,
     error: appError.message,

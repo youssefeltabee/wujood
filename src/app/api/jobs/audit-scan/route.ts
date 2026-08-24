@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { scanUrl } from "@/modules/audit/audit.scanner";
 import { computeScore } from "@/modules/audit/audit.scorer";
 import { enqueueJob } from "@/lib/queue";
+import { logger } from "@/lib/logger";
 
 const receiver = new Receiver({
   currentSigningKey: process.env.QSTASH_SIGNING_KEY!,
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
   try {
     await enqueueJob("pdf-generation", { auditId });
   } catch (error) {
-    console.error(`Failed to enqueue PDF generation for audit ${auditId}:`, error);
+    logger.error(`Failed to enqueue PDF generation for audit ${auditId}`, { error: error instanceof Error ? error.message : String(error) });
   }
 
   return NextResponse.json({ success: true });
