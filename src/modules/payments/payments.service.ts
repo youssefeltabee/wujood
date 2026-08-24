@@ -22,6 +22,20 @@ export async function completePayment(id: string, callbackData?: Record<string, 
   if (payment.status === "completed") throw new ConflictError("Payment already completed");
 
   return prisma.$transaction(async (tx) => {
+    const meta = (payment.metadata ?? {}) as Record<string, unknown>;
+    const markCompleted = {
+      where: { id },
+      data: {
+        status: "completed",
+        metadata: { ...meta, callback: callbackData } as Prisma.InputJsonValue,
+      },
+    };
+
+    // ponytail: catalog purchases never touch subscriptions
+    if (meta.catalogItemId) {
+      return tx.payment.update(markCompleted);
+    }
+
     const existingSub = await tx.subscription.findFirst({
       where: { userId: payment.userId, status: "active" },
     });

@@ -99,6 +99,14 @@ export async function fawryCallbackController(req: NextRequest) {
 
     const isPaid = paymentStatus === "PAID" || paymentStatus === "SUCCESS";
     if (isPaid) {
+      const claimedAmount = Number(body.amount ?? rest.amountPaid ?? NaN);
+      const storedAmount = Math.round(Number(payment.amount));
+      if (!Number.isFinite(claimedAmount) || Math.round(claimedAmount) !== storedAmount) {
+        console.error(
+          `[Fawry] Amount mismatch for ${merchantRefCode}: callback=${body.amount} stored=${storedAmount} — refusing to complete`,
+        );
+        return NextResponse.json({ error: "Amount mismatch" }, { status: 400 });
+      }
       await paymentsService.completePayment(payment.id, rest);
     } else {
       await paymentsService.failPayment(payment.id, rest);

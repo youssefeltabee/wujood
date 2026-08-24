@@ -1,6 +1,10 @@
 import { lookup as dnsLookup } from "dns/promises";
+import type { LookupFunction } from "net";
+import { Agent, fetch as undiciFetch } from "undici";
 import { MemoryCache } from "@/lib/cache";
-import { validateUrl, isPrivateIP } from "@/lib/url-validation";
+import { validateUrl, containsPrivateIP } from "@/lib/url-validation";
+
+const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
 export interface ScanResult {
   mobileScore: number;
@@ -308,16 +312,22 @@ export async function scanUrl(url: string): Promise<ScanResult> {
 
   const hostname = urlObj.hostname;
 
+  // Single resolution — the fetch below is pinned to these addresses and cannot re-resolve.
+  let resolved: { address: string; family: number }[];
   try {
-    const addresses = await dnsLookup(hostname, { all: true });
-    for (const addr of addresses) {
-      if (isPrivateIP(addr.address) || addr.address === "127.0.0.1" || addr.address === "::1") {
-        return errorResult("Target resolves to private IP");
-      }
-    }
+    resolved = await dnsLookup(hostname, { all: true, verbatim: true });
   } catch {
     return errorResult("Could not resolve hostname");
   }
+  if (containsPrivateIP(resolved)) {
+    return errorResult("Target resolves to private IP");
+  }
+
+  const pinnedLookup: LookupFunction = (_host, _opts, cb) => {
+    const addr = resolved[0];
+    cb(null, addr.address, addr.family);
+  };
+  const dispatcher = new Agent({ connect: { lookup: pinnedLookup } });
 
   let html = "";
   const headers: Record<string, string> = {};
@@ -326,15 +336,34 @@ export async function scanUrl(url: string): Promise<ScanResult> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(fullUrl, {
+    const res = await undiciFetch(fullUrl, {
       signal: controller.signal,
       headers: { "User-Agent": "WujoodAudit/1.0" },
       redirect: "error",
+      dispatcher,
     });
+
+    const reader = res.body?.getReader();
+    if (reader) {
+      const decoder = new TextDecoder();
+      let bytes = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytes += value.byteLength;
+        html += decoder.decode(value, { stream: true });
+        if (bytes > MAX_RESPONSE_BYTES) {
+          controller.abort();
+          reader.cancel().catch(() => {});
+          break;
+        }
+      }
+      html += decoder.decode();
+    }
+
     clearTimeout(timeout);
-    html = await res.text();
     res.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
-    fetchSuccess = true;
+    fetchSuccess = !!html;
   } catch {
     html = "";
   }

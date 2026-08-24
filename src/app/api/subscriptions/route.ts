@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
 import { handleApiError } from "@/lib/errors";
+import { assertTierPayment } from "@/modules/payments/payments.gate";
 import { siteConfig } from "@/config/site";
 
 const VALID_TIERS = siteConfig.tiers.map(t => t.id);
@@ -46,6 +47,14 @@ export async function POST(req: NextRequest) {
       const { tier } = body;
       if (!tier || !VALID_TIERS.includes(tier)) {
         return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
+      }
+
+      const payments = await prisma.payment.findMany({
+        where: { userId: user.userId },
+        orderBy: { createdAt: "desc" },
+      });
+      if (!assertTierPayment(payments, tier).ok) {
+        return NextResponse.json({ error: "payment_required" }, { status: 402 });
       }
 
       const current = await prisma.subscription.findFirst({

@@ -14,10 +14,12 @@ const PRIVATE_IP_PATTERNS = [
   /\.localhost$/i,
   /\.local$/i,
   /\.internal$/i,
+  /^::$/,
   /^::1$/,
   /^\[?::1\]?$/,
   /^f[cd][0-9a-f]{2}:/i,
-  /^fe80:/,
+  /^fe80:/i,
+  /^ff[0-9a-f]{2}:/i,
   /^::ffff:/i,
 ];
 
@@ -45,4 +47,8 @@ export function validateUrl(url: string): URL {
 
 export function isPrivateIP(ip: string): boolean {
   return PRIVATE_IP_PATTERNS.some((p) => p.test(ip));
+}
+
+export function containsPrivateIP(addresses: { address: string }[]): boolean {
+  return addresses.some((a) => isPrivateIP(a.address));
 }

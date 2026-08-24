@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { authenticateUser } from "@/lib/auth";
 import { handleApiError } from "@/lib/errors";
+import { rateLimit } from "@/lib/rate-limit";
 import { generateChatResponse } from "./chat.service";
+
+const MAX_MESSAGE_CHARS = 2000;
+const MAX_HISTORY_TURNS = 20;
+const MAX_STORED_MESSAGES = 40;
+
+const sendMessageSchema = z.object({
+  conversationId: z.string().optional(),
+  message: z.string().min(1).max(MAX_MESSAGE_CHARS),
+});
 
 export async function listConversationsController() {
   try {
@@ -40,8 +51,12 @@ export async function sendMessageController(req: NextRequest) {
   try {
     const user = await authenticateUser();
 
-    const { conversationId, message } = await req.json();
-    if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    const rl = await rateLimit(`chat:${user.userId}`, { interval: 60_000, maxRequests: 10 });
+    if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
+    const parsed = sendMessageSchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json({ error: "Message is required (max 2000 chars)" }, { status: 400 });
+    const { conversationId, message } = parsed.data;
 
     let conversation;
     if (conversationId) {
@@ -55,10 +70,9 @@ export async function sendMessageController(req: NextRequest) {
       ? (conversation.messages as { role: string; content: string }[])
       : [];
 
-    const userMessage = { role: "user", content: message };
-    const updatedMessages = [...existingMessages, userMessage];
-    const aiResponse = await generateChatResponse(updatedMessages);
-    const finalMessages = [...updatedMessages, aiResponse];
+    const updatedMessages = [...existingMessages, { role: "user", content: message }];
+    const aiResponse = await generateChatResponse(updatedMessages.slice(-MAX_HISTORY_TURNS));
+    const finalMessages = [...updatedMessages, aiResponse].slice(-MAX_STORED_MESSAGES);
 
     if (!conversation) {
       conversation = await prisma.conversation.create({
