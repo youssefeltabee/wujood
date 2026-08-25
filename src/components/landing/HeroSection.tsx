@@ -27,6 +27,9 @@ export function HeroSection() {
       <div className="relative w-full max-w-6xl mx-auto px-6 pt-12 md:pt-16">
         <div className="grid md:grid-cols-5 gap-8 items-center">
           <div className="md:col-span-3 md:pr-8">
+            {/* Section-label eyebrow */}
+            <p className="section-label mb-5 animate-rise">{t("nav.eyebrow")}</p>
+
             {/* Floating badges */}
             <div className="flex items-center gap-3 mb-6 animate-rise">
               <span className="inline-flex items-center gap-1.5 bg-accent-gold/10 text-accent-gold text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide border border-accent-gold/20 animate-float">
@@ -39,17 +42,22 @@ export function HeroSection() {
               </span>
             </div>
 
-            {/* Gradient heading */}
-            <h1 className="text-[clamp(2.5rem,8vw,5rem)] md:text-7xl lg:text-8xl font-bold leading-[1.02] mb-5 animate-rise-2">
-              <span className="gradient-text">{t("hero.heading")}</span>
+            {/* Display heading — gold gradient on the key phrase */}
+            <h1 className="text-[clamp(2.75rem,6.5vw,6rem)] font-bold leading-[1.02] mb-5 animate-rise-2">
+              {t("hero.heading")}{" "}
+              <span className="gradient-text">{t("hero.heading.accent")}</span>
             </h1>
 
             <p className="text-base md:text-lg text-text-secondary leading-relaxed mb-6 max-w-lg animate-rise-3">
               {t("hero.subtext")}
             </p>
 
-            <div className="max-w-md animate-rise-3">
-              <AuditForm />
+            {/* Audit form in a glass panel */}
+            <div className="relative max-w-md animate-rise-3">
+              <div className="relative overflow-hidden rounded-2xl glass-panel focus-ring-gold p-4">
+                <div className="grain" aria-hidden />
+                <AuditForm />
+              </div>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 animate-rise-3">

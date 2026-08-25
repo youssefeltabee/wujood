@@ -16,11 +16,11 @@ export function ProblemSection() {
   const { t } = useLocale();
 
   return (
-    <RevealSection className="py-24 md:py-32 px-6" id="problem">
+    <RevealSection className="py-[var(--spacing-section)] px-6" id="problem">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-5 gap-10 items-center">
           <div className="md:col-span-3 md:pr-8">
-            <p className="text-accent-cyan font-semibold text-xs mb-3 tracking-widest uppercase">{t("section.problem.label")}</p>
+            <p className="section-label mb-4">{t("section.problem.label")}</p>
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-text-primary mb-6 leading-[1.05]">
               {t("section.problem.heading")}
             </h2>
@@ -29,7 +29,7 @@ export function ProblemSection() {
             </p>
             <div className="grid grid-cols-2 gap-3">
               {painKeys.map((key, i) => (
-                <div key={key} className="pain-point-card flex items-center gap-2.5 text-sm text-text-secondary glass rounded-xl px-4 py-3 cursor-default">
+                <div key={key} className="pain-point-card card-lux flex items-center gap-2.5 text-sm text-text-secondary px-4 py-3 cursor-default">
                   <span className="pain-point-icon text-accent-gold shrink-0">{iconMap[["Search", "Smartphone", "CreditCard", "Globe"][i]]}</span>
                   {t(key)}
                 </div>

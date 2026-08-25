@@ -13,7 +13,8 @@ function StepCard({ item, index, t }: { item: typeof howItWorks[0]; index: numbe
   const { ref, visible } = useScrollReveal<HTMLDivElement>(0.2);
   return (
     <div ref={ref} className={`step-card transition-all duration-700 ${visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
-      <div className="flex items-start gap-5 relative">
+      <div className="card-lux p-6 md:p-7">
+        <div className="flex items-start gap-5 relative">
         {/* Step number with glow */}
         <div className="relative shrink-0">
           <div className="w-16 h-16 rounded-2xl bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
@@ -27,6 +28,7 @@ function StepCard({ item, index, t }: { item: typeof howItWorks[0]; index: numbe
           <h3 className="text-xl font-bold text-text-primary mb-2">{t(item.titleKey)}</h3>
           <p className="text-text-secondary leading-relaxed text-sm">{t(item.descKey)}</p>
         </div>
+        </div>
       </div>
     </div>
   );
@@ -37,12 +39,12 @@ export function HowItWorks() {
   const { t } = useLocale();
 
   return (
-    <section className="py-24 md:py-32 px-6 bg-bg-surface relative overflow-hidden" id="how-it-works">
+    <section className="py-[var(--spacing-section)] px-6 bg-bg-surface relative overflow-hidden" id="how-it-works">
       <GeometricPattern opacity={0.015} />
       <div className="relative max-w-6xl mx-auto" ref={howRef}>
         <div className="grid md:grid-cols-5 gap-12 md:gap-16">
           <div className="md:col-span-2 md:sticky md:top-32 md:h-fit">
-            <p className="text-accent-cyan font-semibold text-xs mb-3 tracking-widest uppercase">{t("section.how-it-works.label")}</p>
+            <p className="section-label mb-4">{t("section.how-it-works.label")}</p>
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-[1.05]">
               {t("section.how-it-works.heading")}
             </h2>

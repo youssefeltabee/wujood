@@ -60,9 +60,14 @@ describe("HowItWorks", () => {
   it("has correct responsive padding classes", () => {
     const { container } = render(<HowItWorks />);
     const section = container.querySelector("section");
-    expect(section).toHaveClass("py-24");
-    expect(section).toHaveClass("md:py-32");
+    expect(section).toHaveClass("py-[var(--spacing-section)]");
     expect(section).toHaveClass("overflow-hidden");
+  });
+
+  it("wraps each step in a card-lux panel", () => {
+    const { container } = render(<HowItWorks />);
+    const panels = container.querySelectorAll(".step-card .card-lux");
+    expect(panels.length).toBe(3);
   });
 
   it("renders step cards with visible opacity state", () => {

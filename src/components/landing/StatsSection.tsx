@@ -34,7 +34,7 @@ function AnimatedStat({ target, suffix = "" }: { target: number; suffix?: string
 
   return (
     <div ref={ref}>
-      <span className="text-6xl md:text-7xl font-bold gradient-text">{count}{suffix}</span>
+      <span className="stat-value animate-count-flash text-6xl md:text-7xl font-bold gradient-text">{count}{suffix}</span>
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function StatsSection() {
     <section className="relative z-10 -mt-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="glass rounded-3xl overflow-hidden glow-gold">
-          <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border-subtle">
+          <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border-subtle animate-stagger">
             {whatsappStats.map((stat, i) => {
               const Icon = stat.icon;
               return (

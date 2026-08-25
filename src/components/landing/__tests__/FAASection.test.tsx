@@ -106,8 +106,7 @@ describe("FAASection", () => {
   it("has correct responsive padding", () => {
     const { container } = render(<FAASection />);
     const section = container.querySelector("#faq");
-    expect(section).toHaveClass("py-20");
-    expect(section).toHaveClass("md:py-24");
+    expect(section).toHaveClass("py-[var(--spacing-section)]");
   });
 
   it("renders border-bottom separators between FAQ items", () => {

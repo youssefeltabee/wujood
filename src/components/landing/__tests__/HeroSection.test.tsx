@@ -11,16 +11,27 @@ vi.mock("@/components/hero/ScoreOrb", () => ({ ScoreOrb: () => <div data-testid=
 vi.mock("@/lib/i18n", () => ({
   useLocale: () => ({
     locale: "en", setLocale: vi.fn(), dir: "ltr",
-    t: (key: string) => ({ "hero.heading":"Your customers are searching for you on WhatsApp right now.","hero.subtext":"If your website is outdated or your social media went quiet","hero.badge.free":"Free • 30s Audit","hero.badge.whatsapp":"WhatsApp Included","nav.login":"Login","nav.cta":"Start Now","hero.feature.whatsapp":"WhatsApp click-to-chat","hero.feature.mobile":"Mobile-friendly site","hero.feature.social":"Social media setup" }[key] ?? key),
+    t: (key: string) => ({ "nav.eyebrow":"Wujood • Digital Presence Platform","hero.heading":"Your customers are searching for you","hero.heading.accent":"on WhatsApp right now.","hero.subtext":"If your website is outdated or your social media went quiet","hero.badge.free":"Free • 30s Audit","hero.badge.whatsapp":"WhatsApp Included","nav.login":"Login","nav.cta":"Start Now","hero.feature.whatsapp":"WhatsApp click-to-chat","hero.feature.mobile":"Mobile-friendly site","hero.feature.social":"Social media setup" }[key] ?? key),
   }),
 }));
 
 afterEach(() => vi.clearAllMocks());
 
 describe("HeroSection", () => {
-  it("renders the main headline", () => {
+  it("renders the main headline with gold accent phrase", () => {
     render(<HeroSection />);
-    expect(screen.getByText("Your customers are searching for you on WhatsApp right now.")).toBeInTheDocument();
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1.textContent).toBe("Your customers are searching for you on WhatsApp right now.");
+    // Key phrase carries the gradient treatment
+    const accent = h1.querySelector(".gradient-text");
+    expect(accent).not.toBeNull();
+    expect(accent!.textContent).toBe("on WhatsApp right now.");
+  });
+
+  it("renders a section-label eyebrow above the headline", () => {
+    render(<HeroSection />);
+    const eyebrow = screen.getByText("Wujood • Digital Presence Platform");
+    expect(eyebrow).toHaveClass("section-label");
   });
 
   it("renders the description paragraph", () => {
@@ -42,6 +53,15 @@ describe("HeroSection", () => {
     const wrapper = container.querySelector(".max-w-md");
     expect(wrapper).not.toBeNull();
     expect(wrapper!.querySelector('[data-testid="audit-form"]')).toBeInTheDocument();
+  });
+
+  it("renders AuditForm inside a glass panel with grain and gold focus ring", () => {
+    const { container } = render(<HeroSection />);
+    const card = container.querySelector(".glass-panel");
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass("focus-ring-gold");
+    expect(card!.querySelector(".grain")).toBeInTheDocument();
+    expect(card!.querySelector('[data-testid="audit-form"]')).toBeInTheDocument();
   });
 
   it("renders all three feature check items", () => {

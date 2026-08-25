@@ -22,7 +22,7 @@ function initials(name: string) {
 export function TestimonialsSection() {
   const { t } = useLocale();
   const slides = testimonials.map((tst) => (
-    <article key={tst.name} className="card-tilt-inner relative overflow-hidden glass rounded-2xl p-6 md:p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-accent-gold/5">
+    <article key={tst.name} className="card-lux card-tilt-inner relative overflow-hidden p-6 md:p-8 text-left">
       <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-accent-gold/10 blur-2xl" aria-hidden />
       <div className="flex items-center gap-1 mb-4">
         {[1, 2, 3, 4, 5].map((s) => (
@@ -48,11 +48,11 @@ export function TestimonialsSection() {
   ));
 
   return (
-    <section className="py-20 md:py-24 px-6 bg-bg-elevated relative overflow-hidden">
+    <section className="py-[var(--spacing-section)] px-6 bg-bg-elevated relative overflow-hidden">
       <GeometricPattern opacity={0.06} />
       <div className="relative max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-text-secondary font-semibold text-xs mb-3 tracking-widest uppercase">{t("section.testimonials.label")}</p>
+          <p className="section-label justify-center mb-4">{t("section.testimonials.label")}</p>
           <h2 className="text-3xl md:text-4xl font-bold text-text-primary leading-[1.1]">
             {t("section.testimonials.heading")}
           </h2>

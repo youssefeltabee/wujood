@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { GeometricPattern } from "@/components/ui/GeometricPattern";
 import { RevealSection } from "@/components/ui/ScrollReveal";
 import { TiltCard } from "@/components/ui/TiltCard";
@@ -41,7 +41,7 @@ function PricingCard({ tier, onShowDetails }: { tier: Tier; onShowDetails: () =>
 
   return (
     <TiltCard>
-      <div className={`card-tilt-inner relative bg-bg-surface border ${tier.popular ? "border-accent-gold shadow-lg shadow-accent-gold/10 glow-gold" : "border-border-subtle"} rounded-3xl p-8 ${tier.popular ? "gradient-border" : ""}`}>
+      <div className={`card-lux card-tilt-inner relative p-8 ${tier.popular ? "glow-gold gradient-border shadow-lg shadow-accent-gold/10" : ""}`}>
         {tier.popular && (
           <div className="absolute -top-3.5 left-7 bg-accent-gold text-white text-[11px] font-semibold px-3.5 py-1 rounded-full tracking-wide uppercase">
             {t("section.pricing.most-popular")}
@@ -89,11 +89,11 @@ export function PricingSection() {
   const [detailsTier, setDetailsTier] = useState<Tier | null>(null);
 
   return (
-    <section className="py-24 md:py-32 px-6 relative overflow-hidden" id="pricing">
+    <section className="py-[var(--spacing-section)] px-6 relative overflow-hidden" id="pricing">
       <GeometricPattern opacity={0.015} />
       <div className="relative max-w-6xl mx-auto">
         <RevealSection>
-          <p className="text-accent-cyan font-semibold text-xs mb-3 text-center tracking-widest uppercase">{t("section.pricing.label")}</p>
+          <p className="section-label justify-center mb-4">{t("section.pricing.label")}</p>
           <h2 className="text-3xl md:text-5xl font-bold text-text-primary text-center mb-4 leading-[1.1]">
             {t("section.pricing.heading")}
           </h2>
@@ -101,7 +101,7 @@ export function PricingSection() {
             {t("section.pricing.subtext")}
           </p>
         </RevealSection>
-        <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto animate-stagger">
           {tiers.map((tier) => (
             <PricingCard key={tier.id} tier={tier} onShowDetails={() => setDetailsTier(tier)} />
           ))}

@@ -17,7 +17,8 @@ function Marquee() {
   const items = ["محلات", "مطاعم", "ورش", "عيادات", "مدارس", "شركات", "متاجر", "مكاتب", "معامل", "صيدليات"];
   const doubled = [...items, ...items];
   return (
-    <div className="py-6 overflow-hidden bg-bg-elevated border-y border-border-subtle">
+    <div className="py-6 overflow-hidden bg-bg-elevated border-y border-border-subtle [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+      {/* ponytail: .pattern-fade fades the wrong axis for a horizontal marquee; symmetric physical fade is RTL-neutral */}
       <div className="marquee-track">
         {doubled.map((item, i) => (
           <span key={i} className="text-text-muted/40 text-sm font-bold tracking-widest uppercase whitespace-nowrap">{item}</span>

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { PricingSection } from "../PricingSection";
 
 vi.mock("next/link", () => ({ default: vi.fn(({ children, href, className }) => <a href={href} className={className}>{children}</a>) }));
@@ -133,9 +132,16 @@ describe("PricingSection", () => {
   it("has section with correct padding and overflow classes", () => {
     const { container } = render(<PricingSection />);
     const section = container.querySelector("#pricing");
-    expect(section).toHaveClass("py-24");
-    expect(section).toHaveClass("md:py-32");
+    expect(section).toHaveClass("py-[var(--spacing-section)]");
     expect(section).toHaveClass("overflow-hidden");
+  });
+
+  it("renders pricing tiers as card-lux panels in a staggered grid", () => {
+    const { container } = render(<PricingSection />);
+    const grid = container.querySelector(".grid");
+    expect(grid).toHaveClass("animate-stagger");
+    const cards = grid?.querySelectorAll(".card-lux");
+    expect(cards?.length).toBe(3);
   });
 
   it("contains GeometricPattern background decoration", () => {

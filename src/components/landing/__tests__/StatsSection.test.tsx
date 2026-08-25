@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { StatsSection } from "../StatsSection";
 
@@ -61,6 +61,21 @@ describe("StatsSection", () => {
     const { container } = render(<StatsSection />);
     const statNumbers = container.querySelectorAll("span.gradient-text");
     expect(statNumbers.length).toBe(3);
+  });
+
+  it("styles stat values with stat-value and count-flash treatment", () => {
+    const { container } = render(<StatsSection />);
+    const values = container.querySelectorAll("span.gradient-text");
+    values.forEach((v) => {
+      expect(v).toHaveClass("stat-value");
+      expect(v).toHaveClass("animate-count-flash");
+    });
+  });
+
+  it("staggers the stat cards on load", () => {
+    const { container } = render(<StatsSection />);
+    const grid = container.querySelector(".grid");
+    expect(grid).toHaveClass("animate-stagger");
   });
 
   it("renders section within a z-index context", () => {

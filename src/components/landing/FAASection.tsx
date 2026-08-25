@@ -15,10 +15,10 @@ export function FAASection() {
   const { t } = useLocale();
 
   return (
-    <section className="py-20 md:py-24 px-6 bg-bg-primary" id="faq">
+    <section className="py-[var(--spacing-section)] px-6 bg-bg-primary" id="faq">
       <div className="max-w-3xl mx-auto">
         <RevealSection>
-          <p className="text-accent-cyan font-semibold text-xs mb-3 text-center tracking-widest uppercase">{t("section.faq.label")}</p>
+          <p className="section-label justify-center mb-4">{t("section.faq.label")}</p>
           <h2 className="text-3xl md:text-5xl font-bold text-text-primary text-center mb-14 leading-[1.1]">
             {t("section.faq.heading")}
           </h2>

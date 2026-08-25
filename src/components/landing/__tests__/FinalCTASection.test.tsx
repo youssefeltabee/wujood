@@ -11,6 +11,7 @@ vi.mock("@/lib/i18n", () => ({
     dir: "ltr",
     t: (key: string) => {
       const dict: Record<string, string> = {
+        "section.cta.label": "Start Free — 30 Seconds",
         "section.cta.heading": "See where your business stands.",
         "section.cta.subtext": "Enter your website URL. Get a free Digital Presence Score and a full breakdown of what is missing. It takes 30 seconds.",
       };
@@ -25,6 +26,11 @@ describe("FinalCTASection", () => {
   it("renders the CTA headline", () => {
     render(<FinalCTASection />);
     expect(screen.getByText("See where your business stands.")).toBeInTheDocument();
+  });
+
+  it("renders a section-label eyebrow above the headline", () => {
+    render(<FinalCTASection />);
+    expect(screen.getByText("Start Free — 30 Seconds")).toHaveClass("section-label");
   });
 
   it("renders the description paragraph", () => {
@@ -54,8 +60,15 @@ describe("FinalCTASection", () => {
   it("has correct responsive padding classes", () => {
     const { container } = render(<FinalCTASection />);
     const section = container.querySelector("section");
-    expect(section).toHaveClass("py-24");
-    expect(section).toHaveClass("md:py-28");
+    expect(section).toHaveClass("py-[var(--spacing-section)]");
+  });
+
+  it("renders AuditForm in a glass panel with grain", () => {
+    const { container } = render(<FinalCTASection />);
+    const card = container.querySelector(".glass-panel");
+    expect(card).not.toBeNull();
+    expect(card!.querySelector(".grain")).toBeInTheDocument();
+    expect(card!.querySelector('[data-testid="audit-form"]')).toBeInTheDocument();
   });
 
   it("has max-width constrained content area", () => {

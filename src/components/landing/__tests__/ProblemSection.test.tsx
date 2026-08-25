@@ -66,11 +66,9 @@ describe("ProblemSection", () => {
 
   it("has correct responsive padding", () => {
     const { container } = render(<ProblemSection />);
-    const section = container.querySelector("section") || container.querySelector("#problem")?.closest("section") || container.querySelector('[class*="py-24"]');
-    // The RevealSection wrapping means the outer element has the classes
-    const revealEl = container.querySelector('[class*="py-24"]');
-    expect(revealEl).toHaveClass("py-24");
-    expect(revealEl).toHaveClass("md:py-32");
+    // Vertical rhythm comes from the --spacing-section token (Dark Luxe Cairo system)
+    const revealEl = container.querySelector("#problem");
+    expect(revealEl).toHaveClass("py-[var(--spacing-section)]");
   });
 
   it("has two-column grid layout on desktop", () => {
