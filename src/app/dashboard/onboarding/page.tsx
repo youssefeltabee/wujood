@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Button, Input, Select, Spinner, useToast } from "@/components/ui";
+import { Button, Input, Select, Spinner, useToast } from "@/components/ui";
 
 const businessTypes = [
   { value: "retail", label: "Retail" },
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
       </div>
 
       {step === 1 && (
-        <Card variant="elevated" padding="lg">
+        <div className="card-lux p-6 hover:translate-y-0 md:p-8">
           <h2 className="text-xl font-bold text-text-primary mb-1">Welcome to Wujood</h2>
           <p className="text-text-secondary text-sm mb-6">Tell us about your business to get started.</p>
           <div className="space-y-4">
@@ -103,11 +103,11 @@ export default function OnboardingPage() {
               {saving ? "Saving..." : "Continue"}
             </Button>
           </div>
-        </Card>
+        </div>
       )}
 
       {step === 2 && (
-        <Card variant="elevated" padding="lg">
+        <div className="card-lux p-6 hover:translate-y-0 md:p-8">
           <h2 className="text-xl font-bold text-text-primary mb-1">First Audit</h2>
           <p className="text-text-secondary text-sm mb-6">Run your first website audit or skip for now.</p>
           <div className="space-y-4">
@@ -121,18 +121,18 @@ export default function OnboardingPage() {
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {step === 3 && (
-        <Card variant="elevated" padding="lg" className="text-center">
+        <div className="card-lux p-8 text-center hover:translate-y-0">
           <svg className="size-16 mx-auto text-score-high mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h2 className="text-xl font-bold text-text-primary mb-1">You&apos;re All Set!</h2>
           <p className="text-text-secondary text-sm mb-2">Your Wujood account is ready to go.</p>
           <p className="text-text-muted text-xs">Redirecting to dashboard in {countdown}s...</p>
-        </Card>
+        </div>
       )}
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Input, Card, Badge, useToast } from "@/components/ui";
+import { Button, Input, Badge, useToast } from "@/components/ui";
+import { PageHeader } from "../_components/chrome";
 
 interface Website {
   id: string;
@@ -11,6 +12,24 @@ interface Website {
   colors: Record<string, string> | null;
   isPublished: boolean;
   pages: unknown[];
+}
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm text-text-secondary">{label}</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+          className="focus-ring-gold size-8 shrink-0 cursor-pointer rounded border border-border-subtle"
+        />
+        <Input value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm" />
+      </div>
+    </div>
+  );
 }
 
 export default function WebsiteDashboardPage() {
@@ -90,101 +109,92 @@ export default function WebsiteDashboardPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-bg-elevated rounded w-48" />
-          <div className="h-24 bg-bg-elevated rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">{website ? "Your Site" : "Create Your Site"}</h1>
-        {website && (
-          <div className="flex items-center gap-3">
-            <Badge variant={website.isPublished ? "success" : "warning"}>
-              {website.isPublished ? "Published" : "Draft"}
-            </Badge>
-            {website.isPublished && website.domain && (
-              <a
-                href={`https://${website.domain}.wujood.vercel.app`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-accent-gold hover:underline"
-              >
-                View site &rarr;
-              </a>
+    <div className="mx-auto w-full max-w-2xl px-6 py-10">
+      {loading ? (
+        <div aria-hidden="true">
+          <div className="skeleton mb-2 h-4 w-24 rounded" />
+          <div className="skeleton mb-8 h-9 w-64 rounded-lg" />
+          <div className="skeleton h-96 rounded-2xl" />
+        </div>
+      ) : (
+        <>
+          <PageHeader
+            eyebrow="Tools"
+            title={website ? "Your Site" : "Create Your Site"}
+            subtitle={website?.isPublished ? undefined : website ? "Draft — publish when ready." : undefined}
+            action={
+              website && (
+                <div className="flex items-center gap-3">
+                  <Badge variant={website.isPublished ? "success" : "warning"}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`size-1.5 rounded-full ${website.isPublished ? "bg-accent-cyan" : "bg-score-mid"}`} />
+                      {website.isPublished ? "Live" : "Draft"}
+                    </span>
+                  </Badge>
+                  {website.isPublished && website.domain && (
+                    <a
+                      href={`https://${website.domain}.wujood.vercel.app`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-accent-gold hover:underline"
+                    >
+                      View site &rarr;
+                    </a>
+                  )}
+                </div>
+              )
+            }
+          />
+
+          <form
+            onSubmit={(e) => { e.preventDefault(); handleSave(); }}
+            className="card-lux flex flex-col gap-lg p-6 hover:translate-y-0 md:p-8"
+          >
+            <Input
+              label="Site Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="My Business"
+              required
+            />
+            <Input
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="A short description of your business"
+            />
+
+            {website && (
+              <>
+                <div>
+                  <label htmlFor="site-domain" className="mb-1 block text-sm text-text-secondary">Subdomain</label>
+                  <div className="flex items-center gap-2">
+                    <Input id="site-domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="my-business" className="font-mono" />
+                    <span className="shrink-0 text-sm text-text-muted">.wujood.vercel.app</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-lg sm:grid-cols-2">
+                  <ColorField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
+                  <ColorField label="Background Color" value={secondaryColor} onChange={setSecondaryColor} />
+                </div>
+              </>
             )}
-          </div>
-        )}
-      </div>
 
-      <Card variant="elevated" padding="lg" className="space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Site Title</label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My Business" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
-          <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short description of your business" />
-        </div>
-
-        {website && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">Subdomain</label>
-              <div className="flex items-center gap-2">
-                <Input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="my-business" className="font-mono" />
-                <span className="text-sm text-text-muted shrink-0">.wujood.vercel.app</span>
-              </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button type="submit" disabled={saving || !title.trim()}>
+                {saving ? "Saving..." : website ? "Save Changes" : "Create Site"}
+              </Button>
+              {website && (
+                <Button type="button" variant="secondary" onClick={togglePublish} disabled={saving}>
+                  {website.isPublished ? "Unpublish" : "Publish"}
+                </Button>
+              )}
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Primary Color</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="size-8 rounded border border-border-subtle cursor-pointer shrink-0"
-                  />
-                  <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono text-sm" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Background Color</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={secondaryColor}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="size-8 rounded border border-border-subtle cursor-pointer shrink-0"
-                  />
-                  <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono text-sm" />
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        <div className="flex gap-3 pt-2">
-          <Button onClick={handleSave} disabled={saving || !title.trim()}>
-            {saving ? "Saving..." : website ? "Save Changes" : "Create Site"}
-          </Button>
-          {website && (
-            <Button variant="secondary" onClick={togglePublish} disabled={saving}>
-              {website.isPublished ? "Unpublish" : "Publish"}
-            </Button>
-          )}
-        </div>
-      </Card>
+          </form>
+        </>
+      )}
     </div>
   );
 }

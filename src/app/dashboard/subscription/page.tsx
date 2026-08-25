@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Button, Badge, Spinner, useToast } from "@/components/ui";
+import { Button, Badge, useToast } from "@/components/ui";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import {
   useChangeTier,
 } from "@/hooks/use-subscription";
 import { siteConfig } from "@/config/site";
+import { EmptyState, PageHeader } from "../_components/chrome";
 
 const tierLabels: Record<string, string> = {
   KASHIF: "Kashif",
@@ -73,8 +74,10 @@ export default function SubscriptionPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <div className="mx-auto w-full max-w-3xl px-6 py-10" aria-hidden="true">
+        <div className="skeleton mb-2 h-4 w-24 rounded" />
+        <div className="skeleton mb-8 h-9 w-48 rounded-lg" />
+        <div className="skeleton h-72 rounded-2xl" />
       </div>
     );
   }
@@ -88,32 +91,31 @@ export default function SubscriptionPage() {
     : siteConfig.tiers;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary mb-1">
-          Subscription
-        </h1>
-        <p className="text-text-secondary">Manage your plan and billing.</p>
-      </div>
+    <div className="mx-auto w-full max-w-3xl px-6 py-10">
+      <PageHeader
+        eyebrow="Account"
+        title="Subscription"
+        subtitle="Manage your plan and billing."
+      />
 
-      <Card variant="elevated" padding="lg">
-        <Card.Body>
-          {!subscription ? (
-            <div className="text-center py-8">
-              <p className="text-text-muted mb-4">
-                You don&apos;t have an active subscription yet.
-              </p>
-              <p className="text-sm text-text-muted">
-                Complete a payment to get started.
-              </p>
-            </div>
-          ) : (
+      <div className="card-lux p-6 hover:translate-y-0 md:p-8">
+        {!subscription ? (
+          <EmptyState
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            title="No active subscription"
+            hint="Complete a payment from the pricing page to get started."
+          />
+        ) : (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-text-muted mb-1">Current Plan</p>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-bold text-text-primary">
+                    <h2 className="stat-value text-2xl font-bold text-text-primary">
                       {tierLabels[subscription.tier] || subscription.tier}
                     </h2>
                     <Badge
@@ -179,8 +181,7 @@ export default function SubscriptionPage() {
               )}
             </div>
           )}
-        </Card.Body>
-      </Card>
+      </div>
 
       <Dialog
         open={cancelOpen}

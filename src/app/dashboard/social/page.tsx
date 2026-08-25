@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Button, Input, Select, Badge, Spinner, useToast } from "@/components/ui";
+import { Badge, Button, Input, Select, useToast } from "@/components/ui";
 import {
   useSocialAccounts,
   useConnectSocialAccount,
@@ -10,6 +10,7 @@ import {
   useCreateSocialPost,
   useDeleteSocialPost,
 } from "@/hooks/use-social";
+import { EmptyState, PageHeader } from "../_components/chrome";
 
 interface SocialAccount {
   id: string;
@@ -31,9 +32,9 @@ interface SocialPost {
 }
 
 const statusVariant: Record<string, "success" | "warning" | "info" | "default"> = {
-  published: "success",
-  scheduled: "warning",
-  draft: "info",
+  POSTED: "success",
+  SCHEDULED: "warning",
+  DRAFT: "info",
 };
 
 const platforms = [
@@ -104,43 +105,50 @@ export default function SocialPage() {
     });
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary mb-1">Social Commander</h1>
-        <p className="text-text-secondary">Manage connected accounts and scheduled posts.</p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-lg px-6 py-10">
+      <PageHeader
+        eyebrow="Tools"
+        title="Social Commander"
+        subtitle="Manage connected accounts and scheduled posts."
+      />
 
-      <Card variant="elevated" padding="md">
-        <Card.Header>
-          <h2 className="text-lg font-semibold text-text-primary">Connected Accounts</h2>
-        </Card.Header>
-        <Card.Body>
-          {accounts.length === 0 ? (
-            <p className="text-text-muted text-sm py-4">No accounts connected yet.</p>
+      <section aria-label="Connected accounts">
+        <div className="card-lux p-6 hover:translate-y-0">
+          <p className="section-label mb-2">Channels</p>
+          <h2 className="mb-5 text-lg font-semibold text-text-primary">Connected Accounts</h2>
+          {accountsQuery.isLoading ? (
+            <div className="space-y-2" aria-hidden="true">
+              {[1, 2].map((i) => <div key={i} className="skeleton h-11 rounded-lg" />)}
+            </div>
+          ) : accounts.length === 0 ? (
+            <EmptyState
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                </svg>
+              }
+              title="No accounts connected"
+              hint="Link a platform below to start broadcasting."
+            />
           ) : (
-            <div className="space-y-2 mb-4">
+            <ul className="mb-4 space-y-2">
               {accounts.map((a) => (
-                <div key={a.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-bg-elevated">
+                <li key={a.id} className="flex items-center justify-between rounded-lg bg-bg-elevated px-3 py-2">
                   <div className="flex items-center gap-3">
                     <Badge variant="gold" size="sm">{a.platform}</Badge>
                     <span className="text-sm text-text-primary">{a.handle || "—"}</span>
                   </div>
                   <Button variant="danger" size="sm" onClick={() => removeAccount(a.id)}>Remove</Button>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
-          <div className="flex items-end gap-3 pt-3 border-t border-border-subtle">
+          <form
+            onSubmit={(e) => { e.preventDefault(); addAccount(); }}
+            className="flex flex-col items-stretch gap-3 border-t border-border-subtle pt-3 sm:flex-row sm:items-end"
+          >
             <Select
               options={platforms}
               placeholder="Select platform"
@@ -152,46 +160,57 @@ export default function SocialPage() {
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
             />
-            <Button onClick={addAccount} disabled={!platform}>Connect</Button>
-          </div>
-        </Card.Body>
-      </Card>
+            <Button type="submit" disabled={!platform}>Connect</Button>
+          </form>
+        </div>
+      </section>
 
-      <Card variant="elevated" padding="md">
-        <Card.Header>
-          <h2 className="text-lg font-semibold text-text-primary">Create Post</h2>
-        </Card.Header>
-        <Card.Body>
-          <div className="space-y-3">
+      <section id="create-post" aria-label="Create post" className="scroll-mt-20">
+        <div className="card-lux p-6 hover:translate-y-0">
+          <p className="section-label mb-2">Compose</p>
+          <h2 className="mb-5 text-lg font-semibold text-text-primary">Create Post</h2>
+          <form
+            onSubmit={(e) => { e.preventDefault(); createPost(); }}
+            className="flex flex-col gap-lg"
+          >
             <Select
               options={accounts.map((a) => ({ value: a.id, label: `${a.platform}${a.handle ? ` (${a.handle})` : ""}` }))}
               placeholder="Select account"
               value={selectedAccount}
               onChange={(e) => setSelectedAccount(e.target.value)}
             />
-            <textarea
-              className="w-full rounded-lg border border-border-subtle bg-bg-surface px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:border-accent-gold focus-visible:ring-accent-gold/20 min-h-[100px] resize-y"
-              placeholder="Write your post content..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
+            <div>
+              <label htmlFor="social-content" className="mb-1 block text-sm text-text-secondary">Content</label>
+              <textarea
+                id="social-content"
+                className="focus-ring-gold min-h-[100px] w-full resize-y rounded-lg border border-border-subtle bg-bg-surface px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted"
+                placeholder="Write your post content..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </div>
             <Input
               type="datetime-local"
               label="Schedule (optional)"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
             />
-            <Button onClick={createPost} disabled={!selectedAccount || !content}>
-              {scheduledAt ? "Schedule Post" : "Save Draft"}
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
+            <div>
+              <Button type="submit" disabled={!selectedAccount || !content}>
+                {scheduledAt ? "Schedule Post" : "Save Draft"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </section>
 
-      <Card variant="elevated" padding="md">
-        <Card.Header>
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text-primary">Posts</h2>
+      <section aria-label="Posts">
+        <div className="card-lux p-6 hover:translate-y-0">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="section-label mb-2">Broadcasts</p>
+              <h2 className="text-lg font-semibold text-text-primary">Posts</h2>
+            </div>
             <Select
               options={[
                 { value: "", label: "All" },
@@ -204,49 +223,66 @@ export default function SocialPage() {
               className="w-40"
             />
           </div>
-        </Card.Header>
-        <Card.Body>
-          {posts.length === 0 ? (
-            <p className="text-text-muted text-sm py-4">No posts yet.</p>
+          {loading ? (
+            <div className="space-y-2" aria-hidden="true">
+              {[1, 2, 3].map((i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
+            </div>
+          ) : posts.length === 0 ? (
+            <EmptyState
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              }
+              title="No posts yet"
+              hint="Draft or schedule your first broadcast above."
+              cta={<a href="#create-post" className="focus-ring-gold rounded text-sm font-medium text-accent-gold hover:underline">Compose a post</a>}
+            />
           ) : (
-            <div className="space-y-3">
-              {posts.map((p) => (
-                <div key={p.id} className="p-4 rounded-lg bg-bg-elevated space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary whitespace-pre-wrap line-clamp-3">{p.content}</p>
-                      <div className="flex items-center gap-2 mt-2">
+            <div className="overflow-x-auto">
+              <table className="table-lux w-full text-sm">
+                <thead>
+                  <tr>
+                    <th scope="col" className="px-6 pb-3 pt-5 text-start font-medium">Post</th>
+                    <th scope="col" className="px-6 pb-3 pt-5 text-start font-medium">Channel</th>
+                    <th scope="col" className="px-6 pb-3 pt-5 text-start font-medium">Status</th>
+                    <th scope="col" className="px-6 pb-3 pt-5 text-start font-medium">Timing</th>
+                    <th scope="col" className="px-6 pb-3 pt-5 text-end font-medium"><span className="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posts.map((p) => (
+                    <tr key={p.id}>
+                      <td className="max-w-xs px-6 pe-4">
+                        <p className="line-clamp-2 whitespace-pre-wrap text-text-primary">{p.content}</p>
+                        {p.analytics && p.status === "POSTED" && (
+                          <p className="mt-1 text-xs text-accent-cyan">
+                            {p.analytics.likes} likes · {p.analytics.shares} shares · {p.analytics.reach} reach
+                          </p>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-6">
                         <Badge variant="gold" size="sm">{p.account.platform}</Badge>
+                      </td>
+                      <td className="px-6">
                         <Badge variant={statusVariant[p.status] || "default"} size="sm">{p.status}</Badge>
-                      </div>
-                      {p.scheduledAt && (
-                        <p className="text-xs text-text-muted mt-1">
-                          Scheduled: {new Date(p.scheduledAt).toLocaleString()}
-                        </p>
-                      )}
-                      {p.postedAt && (
-                        <p className="text-xs text-text-muted mt-1">
-                          Posted: {new Date(p.postedAt).toLocaleString()}
-                        </p>
-                      )}
-                    </div>
-                    <Button variant="danger" size="sm" onClick={() => deletePost(p.id)}>Delete</Button>
-                  </div>
-                  {p.analytics && p.status === "POSTED" && (
-                    <div className="flex gap-4 pt-2 border-t border-border-subtle text-xs text-text-secondary">
-                      <span>Likes: {p.analytics.likes}</span>
-                      <span>Shares: {p.analytics.shares}</span>
-                      <span>Comments: {p.analytics.comments}</span>
-                      <span>Clicks: {p.analytics.clicks}</span>
-                      <span>Reach: {p.analytics.reach}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                      </td>
+                      <td className="whitespace-nowrap px-6 text-xs text-text-secondary">
+                        {p.postedAt ? <>Posted {new Date(p.postedAt).toLocaleString()}</> :
+                         p.scheduledAt ? <>Sched. {new Date(p.scheduledAt).toLocaleString()}</> :
+                         "—"}
+                      </td>
+                      <td className="px-6 text-end">
+                        <Button variant="danger" size="sm" onClick={() => deletePost(p.id)}>Delete</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </Card.Body>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
