@@ -76,7 +76,7 @@ export function HeroSection() {
 
           <div className="md:col-span-2 hidden md:block relative">
             {/* Ambient orb behind the product card */}
-            <div className="absolute -inset-10 opacity-50 pointer-events-none">
+            <div className="absolute -inset-10 opacity-25 pointer-events-none z-0">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-80 h-80 rounded-full border border-accent-gold/10 animate-pulse-ring" />
               </div>
@@ -84,7 +84,7 @@ export function HeroSection() {
                 <ScoreOrb />
               </ThreeScene>
             </div>
-            <div className="relative animate-rise-3">
+            <div className="relative animate-rise-3 z-10">
               <HeroMockup />
             </div>
           </div>
