@@ -72,7 +72,7 @@ export default function AuditPage() {
     <div className="mx-auto w-full max-w-5xl px-6 py-10" aria-hidden="true">
       <div className="skeleton mb-2 h-4 w-28 rounded" />
       <div className="skeleton mb-8 h-8 w-72 rounded-lg" />
-      <div className="mb-lg grid gap-6 md:grid-cols-2">
+      <div className="mb-8 grid gap-6 md:grid-cols-2">
         <div className="skeleton h-64 rounded-2xl" />
         <div className="skeleton h-64 rounded-2xl" />
       </div>
@@ -97,7 +97,7 @@ export default function AuditPage() {
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-10">
       {/* Header band */}
-      <header className="mb-lg flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <p className="section-label mb-2">Ghost Audit</p>
           <h1 className="truncate text-2xl font-bold text-text-primary md:text-3xl">{data.url}</h1>
@@ -108,7 +108,7 @@ export default function AuditPage() {
       </header>
 
       {/* Hero: score + radar */}
-      <div className="mb-lg grid gap-6 md:grid-cols-2">
+      <div className="mb-8 grid gap-6 md:grid-cols-2">
         <section aria-label="Total score" className="card-lux flex flex-col items-center justify-center p-10 text-center">
           <p className="section-label mb-6">Total Score</p>
           <p className={`stat-value text-7xl font-bold leading-none ${scoreText(data.totalScore)}`}>
@@ -155,7 +155,7 @@ export default function AuditPage() {
       </section>
 
       {/* Actions */}
-      <div className="mt-lg flex flex-wrap items-center justify-center gap-4">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <a href={`/api/audit/${data.id}/pdf`} download className="focus-ring-gold rounded-lg">
           <Button variant="primary" size="lg" leftIcon={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

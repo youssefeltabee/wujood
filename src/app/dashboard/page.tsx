@@ -38,7 +38,7 @@ export default function DashboardPage() {
         subtitle="Audit history and new scans."
       />
 
-      <section aria-label="Key stats" className="mb-lg">
+      <section aria-label="Key stats" className="mb-8">
         {loading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         ) : null}
       </section>
 
-      <section id="run-audit" aria-label="Run a new audit" className="mb-lg scroll-mt-20">
+      <section id="run-audit" aria-label="Run a new audit" className="mb-8 scroll-mt-20">
         <div className="card-lux p-6 hover:translate-y-0">
           <p className="section-label mb-2">New Scan</p>
           <h2 className="mb-5 text-lg font-semibold text-text-primary">Run a New Audit</h2>

@@ -64,7 +64,7 @@ export default function WhatsAppPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-lg px-6 py-10">
+    <div className="mx-auto w-full max-w-5xl space-y-8 px-6 py-10">
       <PageHeader
         eyebrow="Tools"
         title="WhatsApp"
@@ -77,7 +77,7 @@ export default function WhatsAppPage() {
           <h2 className="mb-5 text-lg font-semibold text-text-primary">New Template</h2>
           <form
             onSubmit={(e) => { e.preventDefault(); createTemplate(); }}
-            className="flex flex-col gap-lg"
+            className="flex flex-col gap-8"
           >
             <Input label="Template Name" value={name} onChange={(e) => setName(e.target.value)} />
             <Select label="Category" options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />

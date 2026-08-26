@@ -434,10 +434,6 @@ h1, h2, h3, h4, h5, h6 {
   /* Gold-tinted hover elevation */
   --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(212, 168, 83, 0.12);
 
-  /* Spacing scale additions */
-  --spacing-xs: 0.5rem;
-  --spacing-lg: 2rem;
-
   /* Motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }

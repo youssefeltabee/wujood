@@ -106,7 +106,7 @@ export default function SocialPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-lg px-6 py-10">
+    <div className="mx-auto w-full max-w-5xl space-y-8 px-6 py-10">
       <PageHeader
         eyebrow="Tools"
         title="Social Commander"
@@ -171,7 +171,7 @@ export default function SocialPage() {
           <h2 className="mb-5 text-lg font-semibold text-text-primary">Create Post</h2>
           <form
             onSubmit={(e) => { e.preventDefault(); createPost(); }}
-            className="flex flex-col gap-lg"
+            className="flex flex-col gap-8"
           >
             <Select
               options={accounts.map((a) => ({ value: a.id, label: `${a.platform}${a.handle ? ` (${a.handle})` : ""}` }))}

@@ -73,7 +73,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-lg">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             <Input
               type="email"
               placeholder="Email | البريد الإلكتروني"

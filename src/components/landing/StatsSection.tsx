@@ -4,9 +4,9 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { TrendingUp, Users, MessageCircle } from "lucide-react";
 
 const whatsappStats = [
-  { label: "Egyptian WhatsApp users", value: "50M+", icon: Users, color: "accent-gold" },
-  { label: "Check business profiles daily", value: "8M", icon: TrendingUp, color: "accent-cyan" },
-  { label: "Prefer WhatsApp over phone calls", value: "73%", icon: MessageCircle, color: "accent-gold" },
+  { label: "Egyptian WhatsApp users", value: "50M+", icon: Users, chip: "bg-accent-gold/10", iconColor: "text-accent-gold" },
+  { label: "Check business profiles daily", value: "8M", icon: TrendingUp, chip: "bg-accent-cyan/10", iconColor: "text-accent-cyan" },
+  { label: "Prefer WhatsApp over phone calls", value: "73%", icon: MessageCircle, chip: "bg-accent-gold/10", iconColor: "text-accent-gold" },
 ];
 
 function AnimatedStat({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -41,7 +41,7 @@ function AnimatedStat({ target, suffix = "" }: { target: number; suffix?: string
 
 export function StatsSection() {
   return (
-    <section className="relative z-10 -mt-20 px-6">
+    <section className="relative px-6">
       <div className="max-w-6xl mx-auto">
         <div className="glass rounded-3xl overflow-hidden glow-gold">
           <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border-subtle animate-stagger">
@@ -49,8 +49,8 @@ export function StatsSection() {
               const Icon = stat.icon;
               return (
                 <div key={stat.label} className={`p-8 md:p-10 text-center group hover:bg-white/[0.02] transition-colors ${i === 1 ? "bg-white/[0.02]" : ""}`}>
-                  <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl bg-${stat.color}/10 mb-4`}>
-                    <Icon className={`w-5 h-5 text-${stat.color}`} />
+                  <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${stat.chip} mb-4`}>
+                    <Icon className={`w-5 h-5 ${stat.iconColor}`} />
                   </div>
                   <AnimatedStat target={parseInt(stat.value)} suffix={stat.value.replace(/\d/g, "")} />
                   <p className="text-sm text-text-secondary mt-2 max-w-40 mx-auto">{stat.label}</p>

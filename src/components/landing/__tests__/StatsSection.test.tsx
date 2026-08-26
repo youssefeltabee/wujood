@@ -31,10 +31,12 @@ describe("StatsSection", () => {
     expect(statCards?.length).toBe(3);
   });
 
-  it("has negative margin for z-index overlap with preceding section", () => {
+  it("does not overlap the tab bar (no negative margin, no z-10)", () => {
     const { container } = render(<StatsSection />);
-    const section = container.querySelector("section") || container.querySelector('[class*="-mt-20"]');
-    expect(section).toHaveClass("-mt-20");
+    const section = container.querySelector("section");
+    expect(section).toHaveClass("relative");
+    expect(section?.className).not.toContain("-mt-20");
+    expect(section?.className).not.toContain("z-10");
   });
 
   it("styles second stat card with elevated background", () => {
@@ -78,11 +80,10 @@ describe("StatsSection", () => {
     expect(grid).toHaveClass("animate-stagger");
   });
 
-  it("renders section within a z-index context", () => {
+  it("renders section without z-index override (tab layout requires no stacking)", () => {
     const { container } = render(<StatsSection />);
     const section = container.querySelector('[class*="relative"]');
     expect(section).toHaveClass("relative");
-    expect(section).toHaveClass("z-10");
   });
 
   it("renders stat values with large bold text styling", () => {

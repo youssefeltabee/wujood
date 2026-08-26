@@ -149,7 +149,7 @@ export default function WebsiteDashboardPage() {
 
           <form
             onSubmit={(e) => { e.preventDefault(); handleSave(); }}
-            className="card-lux flex flex-col gap-lg p-6 hover:translate-y-0 md:p-8"
+            className="card-lux flex flex-col gap-8 p-6 hover:translate-y-0 md:p-8"
           >
             <Input
               label="Site Title"
@@ -175,7 +175,7 @@ export default function WebsiteDashboardPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-lg sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                   <ColorField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
                   <ColorField label="Background Color" value={secondaryColor} onChange={setSecondaryColor} />
                 </div>

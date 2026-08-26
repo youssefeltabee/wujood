@@ -55,7 +55,7 @@ function NavGroups({
     : NAV_GROUPS;
 
   return (
-    <nav className="flex flex-col gap-lg px-3" aria-label="Dashboard">
+    <nav className="flex flex-col gap-8 px-3" aria-label="Dashboard">
       {groups.map((group) => (
         <div key={group.label}>
           <p className="px-3 pb-2 text-xs uppercase tracking-widest text-text-muted">{group.label}</p>

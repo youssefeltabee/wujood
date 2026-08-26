@@ -74,7 +74,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-lg">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             <Input
               type="text"
               placeholder="Name | الاسم (اختياري)"

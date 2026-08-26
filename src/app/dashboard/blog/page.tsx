@@ -44,7 +44,7 @@ function PostFormFields({
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); onSubmit(); }}
-      className="flex flex-col gap-lg"
+      className="flex flex-col gap-8"
     >
       <Input label="Title" value={form.title} onChange={(e) => onTitleChange(e.target.value)} />
       <Input label="Slug" value={form.slug} onChange={(e) => setForm({ slug: e.target.value })} />

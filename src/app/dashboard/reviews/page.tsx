@@ -178,7 +178,7 @@ export default function ReviewsPage() {
           </DialogHeader>
           <form
             onSubmit={(e) => { e.preventDefault(); handleCreate(); }}
-            className="flex flex-col gap-lg"
+            className="flex flex-col gap-8"
           >
             <Input label="Author Name" value={authorName} onChange={(e) => setAuthorName(e.target.value)} required />
             <Input label="Content" value={content} onChange={(e) => setContent(e.target.value)} required />

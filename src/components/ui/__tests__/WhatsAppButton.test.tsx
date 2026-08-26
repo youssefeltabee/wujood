@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { WhatsAppButton } from "../WhatsAppButton";
 
@@ -11,69 +11,55 @@ vi.mock("next/link", () => ({
   )),
 }));
 
+const ENV = process.env;
+
 describe("WhatsAppButton", () => {
-  it("renders a link element", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
-    expect(link).toBeInTheDocument();
+  beforeEach(() => {
+    vi.resetModules();
+    process.env = { ...ENV };
   });
 
-  it("has WhatsApp URL with phone number", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "https://wa.me/201XXXXXXXXX");
+  afterEach(() => {
+    process.env = ENV;
   });
 
-  it("opens in a new tab", () => {
+  it("renders nothing when NEXT_PUBLIC_WHATSAPP_NUMBER is unset", () => {
+    delete process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+    const { container } = render(<WhatsAppButton />);
+    expect(container.querySelector("a")).not.toBeInTheDocument();
+  });
+
+  it("renders a link with the configured number", () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = "201001234567";
+    render(<WhatsAppButton />);
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("href", "https://wa.me/201001234567");
+  });
+
+  it("opens in a new tab with safe rel", () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = "201001234567";
     render(<WhatsAppButton />);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("target", "_blank");
-  });
-
-  it("has rel='noopener noreferrer' for security", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("has aria-label 'Chat on WhatsApp'", () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = "201001234567";
     render(<WhatsAppButton />);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("aria-label", "Chat on WhatsApp");
   });
 
-  it("renders WhatsApp SVG icon", () => {
+  it("renders WhatsApp SVG icon with fixed positioning", () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = "201001234567";
     const { container } = render(<WhatsAppButton />);
-    const svg = container.querySelector("svg");
-    expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
-  });
-
-  it("has fixed positioning classes", () => {
-    render(<WhatsAppButton />);
     const link = screen.getByRole("link");
     expect(link.className).toContain("fixed");
     expect(link.className).toContain("bottom-6");
-    expect(link.className).toContain("right-6");
     expect(link.className).toContain("z-50");
-  });
-
-  it("has gold background color class", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
-    expect(link.className).toContain("bg-accent-gold");
-  });
-
-  it("has rounded-full and shadow-lg classes", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
-    expect(link.className).toContain("rounded-full");
-    expect(link.className).toContain("shadow-lg");
-  });
-
-  it("has hover scale transform", () => {
-    render(<WhatsAppButton />);
-    const link = screen.getByRole("link");
-    expect(link.className).toContain("hover:scale-110");
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
   });
 });

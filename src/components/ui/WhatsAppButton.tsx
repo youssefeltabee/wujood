@@ -1,9 +1,12 @@
 import Link from "next/link";
 
+// ponytail: hidden until NEXT_PUBLIC_WHATSAPP_NUMBER is set — dead CTA is worse than no CTA
 export function WhatsAppButton() {
+  const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  if (!number) return null;
   return (
     <Link
-      href="https://wa.me/201XXXXXXXXX"
+      href={`https://wa.me/${number}`}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-accent-gold rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-200 hover:shadow-xl"
