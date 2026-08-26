@@ -47,7 +47,7 @@ export function HeroMockup() {
           </div>
           <div>
             <p className="text-sm text-text-secondary mb-1">{t("hero.mock.scoreLabel")}</p>
-            <p className="text-2xl font-bold leading-tight">
+            <p className="text-2xl font-bold leading-tight" dir="ltr">
               <span className="gradient-text">+38</span>
             </p>
           </div>
