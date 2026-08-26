@@ -48,3 +48,5 @@ prisma/*.db-journal
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+.playtest/
