@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo, DM_Sans, Geist } from "next/font/google";
+import { cookies } from "next/headers";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LocaleProvider } from "@/lib/i18n";
 import { RTLProvider } from "@/components/RTLProvider";
@@ -30,12 +31,14 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // middleware guarantees the cookie on page requests; ar is the brand-default fallback
+  const locale = (await cookies()).get("wujood-locale")?.value === "en" ? "en" : "ar";
   return (
-    <html lang="ar" dir="rtl" className={cn("dark h-full", "font-sans", geist.variable)}>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={cn("dark h-full", "font-sans", geist.variable)}>
       <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
         <Providers>
-          <LocaleProvider>
+          <LocaleProvider initialLocale={locale}>
             <RTLProvider>
               <SmoothScroll>{children}</SmoothScroll>
             </RTLProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 type Locale = "en" | "ar";
 
@@ -176,27 +176,14 @@ const LocaleCtx = createContext<{
   dir: "ltr" | "rtl";
 } | null>(null);
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("ar");
-
-  useEffect(() => {
-    const stored = localStorage.getItem("wujood-locale") as Locale | null;
-    const initial: Locale =
-      stored === "en" || stored === "ar"
-        ? stored
-        : navigator.language?.toLowerCase().startsWith("ar")
-          ? "ar"
-          : "en";
-    // ponytail: deferred out of the sync effect body; same-tick restore, SSR-safe (no hydration mismatch)
-    queueMicrotask(() => {
-      setLocaleState(initial);
-      document.documentElement.lang = initial;
-      document.documentElement.dir = initial === "ar" ? "rtl" : "ltr";
-    });
-  }, []);
+export function LocaleProvider({ children, initialLocale }: { children: ReactNode; initialLocale?: Locale }) {
+  // server-rendered locale from the wujood-locale cookie (set by middleware from Accept-Language,
+  // updated by setLocale) — single source of truth, no hydration mismatch
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? "ar");
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
+    document.cookie = `wujood-locale=${l}; path=/; max-age=31536000; samesite=lax`;
     localStorage.setItem("wujood-locale", l);
     document.documentElement.lang = l;
     document.documentElement.dir = l === "ar" ? "rtl" : "ltr";

@@ -4,6 +4,14 @@ import { verifyAccessToken } from "@/lib/jwt";
 export async function middleware(req: NextRequest) {
   const { pathname, hostname } = req.nextUrl;
 
+  // ponytail: locale cookie — server renders the right language on first byte (kills hydration flash)
+  if (!req.cookies.get("wujood-locale")) {
+    const locale = (req.headers.get("accept-language") ?? "").toLowerCase().startsWith("ar") ? "ar" : "en";
+    const res = NextResponse.next();
+    res.cookies.set("wujood-locale", locale, { path: "/", maxAge: 31536000, sameSite: "lax" });
+    return res;
+  }
+
   const subdomainMatch = hostname.match(/^(.+)\.wujood\.vercel\.app$/);
   if (subdomainMatch) {
     const subdomain = subdomainMatch[1];
@@ -31,5 +39,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/audit/:path*", "/login", "/register", "/website/:path*", "/admin/:path*", "/"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|mjs|woff2?|txt|xml)$).*)"],
 };
