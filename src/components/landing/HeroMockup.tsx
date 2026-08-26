@@ -17,7 +17,7 @@ export function HeroMockup() {
 
   return (
     <div className="relative">
-      <div className="card-lux glass-panel rounded-3xl p-6 md:p-7 grain">
+      <div className="card-lux glass-panel rounded-3xl p-6 md:p-7">
         <div className="flex items-center justify-between mb-6">
           <span className="text-xs text-text-muted font-medium tracking-wide" dir="ltr">cairocafe.example</span>
           <span className="text-[11px] text-text-muted">{t("hero.mock.caption")}</span>
