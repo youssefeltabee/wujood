@@ -76,11 +76,10 @@ describe("HeroSection", () => {
     expect(screen.getByTestId("audit-form")).toBeInTheDocument();
   });
 
-  it("renders desktop orb glow rings", () => {
+  it("renders desktop orb glow ring behind the product card", () => {
     const { container } = render(<HeroSection />);
-    // Logo lives in Navigation; hero decorates the ScoreOrb with pulse/spin rings
+    // Logo lives in Navigation; hero decorates the ScoreOrb with a pulse ring
     expect(container.querySelector(".animate-pulse-ring")).toBeInTheDocument();
-    expect(container.querySelector(".animate-spin-slow")).toBeInTheDocument();
   });
 
   it("renders ScoreOrb inside ThreeScene for desktop", () => {

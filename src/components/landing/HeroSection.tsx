@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import { Check } from "lucide-react";
 import { AuditForm } from "@/components/audit/AuditForm";
+import { HeroMockup } from "@/components/landing/HeroMockup";
 import { ScoreOrb } from "@/components/hero/ScoreOrb";
 import { useLocale } from "@/lib/i18n";
 
@@ -17,6 +18,9 @@ export function HeroSection() {
       {/* Ambient blobs */}
       <div className="absolute top-1/4 -left-24 w-96 h-96 rounded-full bg-accent-gold/5 blur-3xl animate-blob" />
       <div className="absolute bottom-1/4 -right-24 w-80 h-80 rounded-full bg-accent-cyan/5 blur-3xl animate-blob-2" />
+      {/* Gold spotlight behind the text column — superdesign editorial-restraint pattern */}
+      <div className="absolute top-0 right-0 w-[60rem] h-[36rem] pointer-events-none opacity-60"
+        style={{ background: "radial-gradient(ellipse 55% 45% at 72% 30%, rgba(212,168,83,0.07), transparent 70%)" }} />
 
       {/* Decorative grid */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -70,18 +74,18 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="md:col-span-2 hidden md:block md:-mr-16 lg:-mr-28">
-            {/* Glow ring behind orb */}
-            <div className="relative">
+          <div className="md:col-span-2 hidden md:block relative">
+            {/* Ambient orb behind the product card */}
+            <div className="absolute -inset-10 opacity-50 pointer-events-none">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 rounded-full border border-accent-gold/10 animate-pulse-ring" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-80 h-80 rounded-full border border-accent-cyan/5 animate-spin-slow" />
+                <div className="w-80 h-80 rounded-full border border-accent-gold/10 animate-pulse-ring" />
               </div>
               <ThreeScene>
                 <ScoreOrb />
               </ThreeScene>
+            </div>
+            <div className="relative animate-rise-3">
+              <HeroMockup />
             </div>
           </div>
         </div>

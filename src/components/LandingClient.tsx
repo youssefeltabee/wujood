@@ -21,7 +21,7 @@ function Marquee() {
       {/* ponytail: .pattern-fade fades the wrong axis for a horizontal marquee; symmetric physical fade is RTL-neutral */}
       <div className="marquee-track">
         {doubled.map((item, i) => (
-          <span key={i} className="text-text-muted/40 text-sm font-bold tracking-widest uppercase whitespace-nowrap">{item}</span>
+          <span key={i} className="text-text-secondary/70 text-sm font-bold tracking-widest uppercase whitespace-nowrap">{item}</span>
         ))}
       </div>
     </div>
