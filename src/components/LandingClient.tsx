@@ -14,7 +14,8 @@ import { TabbedLayout } from "@/components/ui/Tabs";
 import { useLocale } from "@/lib/i18n";
 
 function Marquee() {
-  const items = ["محلات", "مطاعم", "ورش", "عيادات", "مدارس", "شركات", "متاجر", "مكاتب", "معامل", "صيدليات"];
+  const { t } = useLocale();
+  const items = t("marquee.items").split("|");
   const doubled = [...items, ...items];
   return (
     <div className="py-6 overflow-hidden bg-bg-elevated border-y border-border-subtle [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
