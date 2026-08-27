@@ -76,10 +76,11 @@ describe("HeroSection", () => {
     expect(screen.getByTestId("audit-form")).toBeInTheDocument();
   });
 
-  it("renders desktop orb glow ring behind the product card", () => {
+  it("renders desktop orb behind the product card (no looping pulse)", () => {
     const { container } = render(<HeroSection />);
-    // Logo lives in Navigation; hero decorates the ScoreOrb with a pulse ring
-    expect(container.querySelector(".animate-pulse-ring")).toBeInTheDocument();
+    // Motion discipline: pulse-ring removed, orb is static backdrop — only rise-up animates
+    expect(container.querySelector(".animate-pulse-ring")).not.toBeInTheDocument();
+    expect(screen.getByTestId("score-orb")).toBeInTheDocument();
   });
 
   it("renders ScoreOrb inside ThreeScene for desktop", () => {
@@ -103,9 +104,9 @@ describe("HeroSection", () => {
     expect(section).toHaveClass("overflow-hidden");
   });
 
-  it("has blob background decoration elements", () => {
+  it("has no looping blob decorations (motion discipline — only rise-up)", () => {
     const { container } = render(<HeroSection />);
     const blobs = container.querySelectorAll(".animate-blob, .animate-blob-2");
-    expect(blobs.length).toBe(2);
+    expect(blobs.length).toBe(0);
   });
 });

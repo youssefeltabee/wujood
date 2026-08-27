@@ -13,11 +13,8 @@ const features = ["hero.feature.whatsapp", "hero.feature.mobile", "hero.feature.
 export function HeroSection() {
   const { t } = useLocale();
 
-  return (
+    return (
     <section className="relative overflow-hidden pb-24 md:pb-32">
-      {/* Ambient blobs */}
-      <div className="absolute top-1/4 -left-24 w-96 h-96 rounded-full bg-accent-gold/5 blur-3xl animate-blob" />
-      <div className="absolute bottom-1/4 -right-24 w-80 h-80 rounded-full bg-accent-cyan/5 blur-3xl animate-blob-2" />
       {/* Gold spotlight behind the text column — superdesign editorial-restraint pattern */}
       <div className="absolute top-0 right-0 w-[60rem] h-[36rem] pointer-events-none opacity-60"
         style={{ background: "radial-gradient(ellipse 55% 45% at 72% 30%, rgba(212,168,83,0.07), transparent 70%)" }} />
@@ -34,14 +31,14 @@ export function HeroSection() {
             {/* Section-label eyebrow */}
             <p className="section-label mb-5 animate-rise">{t("nav.eyebrow")}</p>
 
-            {/* Floating badges */}
+            {/* Floating badges — single accent, no looping motion per anti-slop */}
             <div className="flex items-center gap-3 mb-6 animate-rise">
-              <span className="inline-flex items-center gap-1.5 bg-accent-gold/10 text-accent-gold text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide border border-accent-gold/20 animate-float">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 bg-accent-gold/10 text-accent-gold text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide border border-accent-gold/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-gold" />
                 {t("hero.badge.free")}
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-accent-cyan/10 text-accent-cyan text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide border border-accent-cyan/20 animate-float-delay">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 bg-white/[0.04] text-text-secondary text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide border border-white/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-text-secondary" />
                 {t("hero.badge.whatsapp")}
               </span>
             </div>
@@ -75,11 +72,8 @@ export function HeroSection() {
           </div>
 
           <div className="md:col-span-2 hidden md:block relative">
-            {/* Ambient orb behind the product card */}
-            <div className="absolute -inset-10 opacity-25 pointer-events-none z-0">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-80 h-80 rounded-full border border-accent-gold/10 animate-pulse-ring" />
-              </div>
+            {/* Ambient orb behind the product card — static, no looping */}
+            <div className="absolute -inset-10 opacity-20 pointer-events-none z-0">
               <ThreeScene>
                 <ScoreOrb />
               </ThreeScene>
