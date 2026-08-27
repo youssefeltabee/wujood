@@ -23,12 +23,28 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://wujood-opal.vercel.app"),
   title: {
     template: "%s | Wujood",
     default: "Wujood | Your Business, Online. In EGP. In Arabic.",
   },
   description: "Website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs. All in EGP, all in Arabic.",
   icons: { icon: "/favicon.svg" },
+  openGraph: {
+    title: "Wujood | Your Business, Online. In EGP. In Arabic.",
+    description: "Website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs. From 1,250 EGP/month.",
+    url: "https://wujood-opal.vercel.app",
+    siteName: "Wujood",
+    locale: "ar_EG",
+    alternateLocale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Wujood | Your Business, Online.",
+    description: "Website builder, WhatsApp CRM, social media tools for Egyptian SMEs.",
+  },
+  alternates: { canonical: "/" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
