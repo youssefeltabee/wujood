@@ -42,7 +42,7 @@ export function BlockRenderer({ block, colors }: { block: SiteBlock; colors: Sit
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
-          alt={str(block.alt)}
+          alt={str(block.alt) || "Wujood content image"}
           loading="lazy"
           className="mb-6 w-full rounded-xl object-cover shadow-sm"
           style={{ maxHeight: "480px" }}

@@ -31,40 +31,28 @@ describe("TestimonialsSection", () => {
     expect(screen.getByText("Real Results")).toBeInTheDocument();
   });
 
-  it("renders all five testimonial author names", () => {
+  it("renders all placeholder testimonial author names", () => {
     render(<TestimonialsSection />);
-    expect(screen.getByText("Ahmed H.")).toBeInTheDocument();
-    expect(screen.getByText("Mariam K.")).toBeInTheDocument();
-    expect(screen.getByText("Tarek S.")).toBeInTheDocument();
-    expect(screen.getByText("Laila M.")).toBeInTheDocument();
-    expect(screen.getByText("Omar F.")).toBeInTheDocument();
+    expect(screen.getByText("أحمد")).toBeInTheDocument();
+    expect(screen.getByText("سارة")).toBeInTheDocument();
   });
 
-  it("renders all five business names", () => {
+  it("renders all placeholder business names", () => {
     render(<TestimonialsSection />);
-    expect(screen.getByText("Electronics Shop, Alexandria")).toBeInTheDocument();
-    expect(screen.getByText("Cairo Bakery Chain")).toBeInTheDocument();
-    expect(screen.getByText("Furniture Workshop, Mansoura")).toBeInTheDocument();
-    expect(screen.getByText("Beauty Salon, Giza")).toBeInTheDocument();
-    expect(screen.getByText("Auto Parts, Tanta")).toBeInTheDocument();
+    expect(screen.getByText("مخبز الفجر، حلوان")).toBeInTheDocument();
+    expect(screen.getByText("صالون لمسة، المعادي")).toBeInTheDocument();
   });
 
-  it("renders all five testimonial quotes", () => {
+  it("renders all placeholder testimonial quotes", () => {
     render(<TestimonialsSection />);
-    expect(screen.getByText(/I did not know my website was broken on phones/)).toBeInTheDocument();
-    expect(screen.getByText(/We had 3 Instagram posts in two years/)).toBeInTheDocument();
-    expect(screen.getByText(/Customers kept asking for prices on WhatsApp/)).toBeInTheDocument();
-    expect(screen.getByText(/The audit showed my booking link was dead/)).toBeInTheDocument();
-    expect(screen.getByText(/Honestly I thought digital presence was for big companies/)).toBeInTheDocument();
+    expect(screen.getByText(/التدقيق وضّح لنا مشاكل بسيطة/)).toBeInTheDocument();
+    expect(screen.getByText(/كنا ننشر قليل جداً/)).toBeInTheDocument();
   });
 
   it("renders improvement scores", () => {
     render(<TestimonialsSection />);
-    expect(screen.getByText("+45 points")).toBeInTheDocument();
+    expect(screen.getByText("+42 points")).toBeInTheDocument();
     expect(screen.getByText("+38 points")).toBeInTheDocument();
-    expect(screen.getByText("+52 points")).toBeInTheDocument();
-    expect(screen.getByText("+41 points")).toBeInTheDocument();
-    expect(screen.getByText("+49 points")).toBeInTheDocument();
   });
 
   it("renders CTA link to /register", () => {
@@ -73,10 +61,10 @@ describe("TestimonialsSection", () => {
     expect(cta.closest("a")).toHaveAttribute("href", "/register");
   });
 
-  it("renders carousel with all 7 testimonial slides", () => {
+  it("renders carousel with all 2 placeholder testimonial slides", () => {
     render(<TestimonialsSection />);
     expect(screen.getByTestId("carousel")).toBeInTheDocument();
-    expect(screen.getAllByTestId("carousel-slide")).toHaveLength(7);
+    expect(screen.getAllByTestId("carousel-slide")).toHaveLength(2);
   });
 
   it("renders GeometricPattern decoration", () => {
@@ -84,9 +72,9 @@ describe("TestimonialsSection", () => {
     expect(screen.getByTestId("geo-pattern")).toBeInTheDocument();
   });
 
-  it("renders 35 stars across all testimonials", () => {
+  it("renders 10 stars across all testimonials", () => {
     const { container } = render(<TestimonialsSection />);
     const stars = container.querySelectorAll(".fill-accent-gold");
-    expect(stars.length).toBe(35); // 7 cards x 5 stars
+    expect(stars.length).toBe(10); // 2 cards x 5 stars
   });
 });

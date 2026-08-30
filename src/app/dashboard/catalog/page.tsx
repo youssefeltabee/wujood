@@ -52,6 +52,7 @@ export default function CatalogPage() {
                 <img
                   src={item.imageUrl}
                   alt={item.name}
+                  loading="lazy"
                   className="mb-3 h-40 w-full rounded-lg object-cover"
                 />
               )}

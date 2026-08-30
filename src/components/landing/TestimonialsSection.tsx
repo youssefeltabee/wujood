@@ -5,14 +5,10 @@ import { GeometricPattern } from "@/components/ui/GeometricPattern";
 import { Carousel } from "@/components/ui/Carousel";
 import { useLocale } from "@/lib/i18n";
 
+// ponytail: placeholder until real clients — swap when Saif provides
 const testimonials = [
-  { name: "Ahmed H.", business: "Electronics Shop, Alexandria", quote: "I did not know my website was broken on phones. Wujood fixed it and set up my WhatsApp in two days.", improvement: "+45 points" },
-  { name: "Mariam K.", business: "Cairo Bakery Chain", quote: "We had 3 Instagram posts in two years. Now we post weekly and our orders went up 30%.", improvement: "+38 points" },
-  { name: "Tarek S.", business: "Furniture Workshop, Mansoura", quote: "Customers kept asking for prices on WhatsApp. Now they can see everything on our site.", improvement: "+52 points" },
-  { name: "Dr. Nour A.", business: "Dental Clinic, Dokki", quote: "My patients kept asking if I accept insurance. Now it is right there on my page.", improvement: "+47 points" },
-  { name: "Laila M.", business: "Beauty Salon, Giza", quote: "The audit showed my booking link was dead. Fixed it, and my evening slots fill up now.", improvement: "+41 points" },
-  { name: "Hassan R.", business: "Language School, Maadi", quote: "We went from zero online enrollment to 12 new students in one month.", improvement: "+55 points" },
-  { name: "Omar F.", business: "Auto Parts, Tanta", quote: "Honestly I thought digital presence was for big companies. Wujood proved me wrong for my shop.", improvement: "+49 points" },
+  { name: "أحمد", business: "مخبز الفجر، حلوان", quote: "التدقيق وضّح لنا مشاكل بسيطة في الصفحة ورقم الواتساب. أصلحناها بسرعة وبقى التواصل أسهل مع الزبائن.", improvement: "+42 points", example: true },
+  { name: "سارة", business: "صالون لمسة، المعادي", quote: "كنا ننشر قليل جداً. بعد التوصيات نظمنا النشر وبدأت الحجوزات تزيد بشكل ملحوظ.", improvement: "+38 points", example: true },
 ];
 
 function initials(name: string) {
@@ -24,10 +20,17 @@ export function TestimonialsSection() {
   const slides = testimonials.map((tst) => (
     <article key={tst.name} className="card-lux card-tilt-inner relative overflow-hidden p-6 md:p-8 text-left">
       <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-accent-gold/10 blur-2xl" aria-hidden />
-      <div className="flex items-center gap-1 mb-4">
-        {[1, 2, 3, 4, 5].map((s) => (
-          <Star key={s} className="w-3 h-3 text-accent-gold fill-accent-gold" aria-hidden />
-        ))}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <Star key={s} className="w-3 h-3 text-accent-gold fill-accent-gold" aria-hidden />
+          ))}
+        </div>
+        {tst.example && (
+          <span className="text-[10px] tracking-widest font-bold uppercase bg-bg-elevated border border-line-subtle text-text-muted px-2 py-1 rounded-full">
+            مثال توضيحي · Example
+          </span>
+        )}
       </div>
       <p className="text-text-secondary leading-relaxed text-base md:text-lg mb-6">&ldquo;{tst.quote}&rdquo;</p>
       <div className="flex items-center justify-between gap-3">
