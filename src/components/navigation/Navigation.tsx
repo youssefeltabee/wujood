@@ -84,9 +84,12 @@ export function Navigation() {
               Get Started
             </Link>
             <button
+              type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -96,12 +99,13 @@ export function Navigation() {
 
       {/* Mobile menu */}
       <div
+        id="mobile-menu"
         className={cn(
           "fixed inset-0 z-40 md:hidden transition-all duration-300",
           mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} aria-hidden="true" />
         <div
           className={cn(
             "absolute top-[var(--spacing-nav-height)] left-0 right-0 glass-strong border-b border-border-subtle transition-transform duration-300",
@@ -113,6 +117,7 @@ export function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
                   "text-sm font-medium px-4 py-3 rounded-xl transition-all",
                   pathname === link.href
@@ -126,12 +131,14 @@ export function Navigation() {
             <div className="mt-3 pt-3 border-t border-border-subtle flex gap-3">
               <Link
                 href="/login"
+                onClick={() => setMobileOpen(false)}
                 className="flex-1 text-center py-2.5 rounded-xl font-semibold text-sm border border-border-subtle text-text-primary hover:bg-white/5 transition-all"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
+                onClick={() => setMobileOpen(false)}
                 className="flex-1 text-center py-2.5 rounded-xl font-semibold text-sm bg-accent-gold text-white hover:brightness-110 transition-all"
               >
                 Get Started

@@ -6,8 +6,14 @@ import { Navigation } from "@/components/navigation/Navigation";
 import { PageHero } from "@/components/landing/PageHero";
 
 export const metadata: Metadata = {
-  title: "Features",
-  description: "Everything you need to build trust online — website builder, WhatsApp CRM, social media tools, and AI chatbot for Egyptian SMEs.",
+  title: "Features | Wujood",
+  description:
+    "Explore Wujood features: website builder, WhatsApp CRM, social scheduling, AI chatbot, and audits. Everything Egyptian SMEs need to build trust and grow online.",
+  openGraph: {
+    title: "Features | Wujood",
+    description:
+      "Explore Wujood features: website builder, WhatsApp CRM, social scheduling, AI chatbot, and audits. Everything Egyptian SMEs need to build trust and grow online.",
+  },
 };
 
 export default function FeaturesPage() {

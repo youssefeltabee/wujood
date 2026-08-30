@@ -51,8 +51,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // middleware guarantees the cookie on page requests; ar is the brand-default fallback
   const locale = (await cookies()).get("wujood-locale")?.value === "en" ? "en" : "ar";
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={cn("dark h-full", "font-sans", geist.variable)}>
-      <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body`}>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={cn("dark h-full overflow-x-hidden", "font-sans", geist.variable)}>
+      <body className={`${cairo.variable} ${dmSans.variable} min-h-full flex flex-col font-body overflow-x-hidden`}>
         <Providers>
           <LocaleProvider initialLocale={locale}>
             <RTLProvider>

@@ -4,8 +4,14 @@ import { Navigation } from "@/components/navigation/Navigation";
 import { PageHero } from "@/components/landing/PageHero";
 
 export const metadata: Metadata = {
-  title: "Testimonials",
-  description: "See what our customers say about their experience with Wujood.",
+  title: "Testimonials | Wujood",
+  description:
+    "Hear from Egyptian businesses growing with Wujood. Real stories about audits, catalog, and WhatsApp tools that build trust, drive sales, and deliver results.",
+  openGraph: {
+    title: "Testimonials | Wujood",
+    description:
+      "Hear from Egyptian businesses growing with Wujood. Real stories about audits, catalog, and WhatsApp tools that build trust, drive sales, and deliver results.",
+  },
 };
 
 export default function TestimonialsPage() {

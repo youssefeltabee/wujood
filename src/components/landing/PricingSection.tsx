@@ -73,6 +73,7 @@ function PricingCard({ tier, onShowDetails }: { tier: Tier; onShowDetails: () =>
           </Link>
         ) : (
           <button
+            type="button"
             onClick={onShowDetails}
             className="block w-full text-center py-2.5 rounded-xl font-semibold text-sm transition-all bg-bg-elevated text-text-primary hover:bg-border-subtle cursor-pointer"
           >

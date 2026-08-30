@@ -216,6 +216,7 @@ export function LanguageSwitch() {
   const { locale, setLocale } = useLocale();
   return (
     <button
+      type="button"
       onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
       className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border-subtle text-text-muted hover:text-text-primary hover:border-accent-gold transition-all"
       aria-label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}

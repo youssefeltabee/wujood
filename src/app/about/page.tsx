@@ -3,8 +3,14 @@ import { Navigation } from "@/components/navigation/Navigation";
 import { PageHero } from "@/components/landing/PageHero";
 
 export const metadata: Metadata = {
-  title: "About",
-  description: "We help Egyptian businesses build trust and grow online through automated audits, social proof, and actionable insights.",
+  title: "About | Wujood",
+  description:
+    "Learn how Wujood helps Egyptian businesses build trust online. Arabic-first, EGP pricing, WhatsApp-native, PDPL-compliant tools for audits, catalog, and growth.",
+  openGraph: {
+    title: "About | Wujood",
+    description:
+      "Learn how Wujood helps Egyptian businesses build trust online. Arabic-first, EGP pricing, WhatsApp-native, PDPL-compliant tools for audits, catalog, and growth.",
+  },
 };
 
 const values = [

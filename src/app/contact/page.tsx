@@ -1,27 +1,40 @@
-"use client";
-
+import type { Metadata } from "next";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Navigation } from "@/components/navigation/Navigation";
 import { PageHero } from "@/components/landing/PageHero";
+
+export const metadata: Metadata = {
+  title: "Contact | Wujood",
+  description:
+    "Contact Wujood for custom plans, pricing help, and expert support. Reach us via email, WhatsApp, or Smart Village Cairo to build your digital presence in Egypt.",
+  openGraph: {
+    title: "Contact | Wujood",
+    description:
+      "Contact Wujood for custom plans, pricing help, and expert support. Reach us via email, WhatsApp, or Smart Village Cairo to build your digital presence in Egypt.",
+  },
+};
 
 export const dynamic = "force-dynamic";
 
 const contactMethods = [
   {
     title: "Email Us",
-    value: "hello@wujood.app",
+    value: "youssefeltabee@gmail.com",
+    href: "mailto:youssefeltabee@gmail.com",
     icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
     color: "accent-gold" as const,
   },
   {
     title: "WhatsApp",
-    value: "+20 1XX XXX XXXX",
+    value: "+20 10 0000 0000",
+    href: "tel:+201000000000",
     icon: "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z",
     color: "accent-cyan" as const,
   },
   {
     title: "Office",
     value: "Smart Village, Cairo, Egypt",
+    href: null as string | null,
     icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z",
     color: "green-500" as const,
   },
@@ -54,7 +67,11 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-text-primary">{m.title}</h3>
-                      <p className="text-text-secondary">{m.value}</p>
+                      {m.href ? (
+                        <a href={m.href} className="text-text-secondary hover:text-accent-gold transition-colors">{m.value}</a>
+                      ) : (
+                        <p className="text-text-secondary">{m.value}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -63,7 +80,7 @@ export default function ContactPage() {
               <div className="card-lux relative overflow-hidden p-8">
                 <div className="grain" aria-hidden />
                 <h2 className="relative text-2xl font-heading font-bold text-text-primary mb-6">Send a Message</h2>
-                <form className="relative space-y-5" onSubmit={(e) => e.preventDefault()}>
+                <form className="relative space-y-5">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1">Name</label>

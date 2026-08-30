@@ -8,9 +8,9 @@ export function FooterSection() {
 
   const quickLinks = [
     { label: t("footer.home"), href: "/" },
-    { label: t("footer.pricing"), href: "#pricing" },
-    { label: t("footer.how-it-works"), href: "#how-it-works" },
-    { label: t("footer.faq"), href: "#faq" },
+    { label: t("footer.pricing"), href: "/pricing" },
+    { label: t("footer.how-it-works"), href: "/features" },
+    { label: t("footer.faq"), href: "/features" },
   ];
 
   return (
@@ -35,7 +35,8 @@ export function FooterSection() {
           <div>
             <h4 className="text-xs font-semibold text-text-primary mb-5 uppercase tracking-widest">{t("footer.contact")}</h4>
             <ul className="space-y-3 text-sm text-text-muted">
-              <li>youssefeltabee@gmail.com</li>
+              <li><a href="mailto:youssefeltabee@gmail.com" className="hover:text-accent-gold transition-colors">youssefeltabee@gmail.com</a></li>
+              <li><a href="tel:+201000000000" className="hover:text-accent-gold transition-colors" dir="ltr">+20 10 0000 0000</a></li>
               <li>Cairo, Egypt</li>
               <li>Sun - Thu, 9 AM - 5 PM</li>
             </ul>

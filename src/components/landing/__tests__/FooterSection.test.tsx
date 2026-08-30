@@ -53,13 +53,13 @@ describe("FooterSection", () => {
     expect(home.closest("a")).toHaveAttribute("href", "/");
 
     const pricing = screen.getByText("Pricing");
-    expect(pricing.closest("a")).toHaveAttribute("href", "#pricing");
+    expect(pricing.closest("a")).toHaveAttribute("href", "/pricing");
 
     const howItWorks = screen.getByText("How It Works");
-    expect(howItWorks.closest("a")).toHaveAttribute("href", "#how-it-works");
+    expect(howItWorks.closest("a")).toHaveAttribute("href", "/features");
 
     const faq = screen.getByText("FAQ");
-    expect(faq.closest("a")).toHaveAttribute("href", "#faq");
+    expect(faq.closest("a")).toHaveAttribute("href", "/features");
   });
 
   it("renders Contact heading", () => {

@@ -4,8 +4,14 @@ import { Navigation } from "@/components/navigation/Navigation";
 import { PageHero } from "@/components/landing/PageHero";
 
 export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Simple, transparent pricing for Egyptian SMEs. All plans include a 14-day free trial.",
+  title: "Pricing | Wujood",
+  description:
+    "Transparent Wujood pricing for Egyptian SMEs from 1,250 EGP/month. All plans include a 14-day free trial, no credit card required, cancel anytime, export data.",
+  openGraph: {
+    title: "Pricing | Wujood",
+    description:
+      "Transparent Wujood pricing for Egyptian SMEs from 1,250 EGP/month. All plans include a 14-day free trial, no credit card required, cancel anytime, export data.",
+  },
 };
 
 const assurances = [

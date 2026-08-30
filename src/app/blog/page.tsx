@@ -5,8 +5,14 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "Latest insights, tips, and updates from Wujood.",
+  title: "Blog | Wujood",
+  description:
+    "Wujood blog insights, tips, and updates on building trust online. Expert guides for Egyptian SMEs on websites, WhatsApp, social, and AI strategies for growth.",
+  openGraph: {
+    title: "Blog | Wujood",
+    description:
+      "Wujood blog insights, tips, and updates on building trust online. Expert guides for Egyptian SMEs on websites, WhatsApp, social, and AI strategies for growth.",
+  },
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
